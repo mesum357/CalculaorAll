@@ -8,6 +8,9 @@ import { CONSTRUCTION_CALCULATORS_DATA } from '@/lib/construction-calculators';
 import { CONVERSION_CALCULATORS_DATA } from '@/lib/conversion-calculators';
 import { ECOLOGY_CALCULATORS_DATA } from '@/lib/ecology-calculators';
 import { EVERYDAY_CALCULATORS_DATA } from '@/lib/everyday-calculators';
+import { FINANCE_CALCULATORS_DATA } from '@/lib/finance-calculators';
+import { FOOD_CALCULATORS_DATA } from '@/lib/food-calculators';
+import { HEALTH_CALCULATORS_DATA } from '@/lib/health-calculators';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -242,6 +245,99 @@ export default function CategoryPage({ params }: { params: { category: string } 
         )
     }
 
+    const renderFinanceCalculators = () => {
+        return (
+            <div>
+                 <ReadMore text={FINANCE_CALCULATORS_DATA.description} className="mb-4" />
+                
+                <div className="space-y-12 mt-8">
+                    {FINANCE_CALCULATORS_DATA.subcategories.map(subCategory => (
+                        <div key={subCategory.title}>
+                             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                                <subCategory.icon className="h-6 w-6 text-primary" />
+                                {subCategory.title}
+                            </h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                {subCategory.calculators.map(calc => (
+                                    <Link href={calc.href} key={calc.name} className="group">
+                                        <Card className="h-full transition-all group-hover:shadow-md group-hover:-translate-y-0.5">
+                                            <CardContent className="p-4 flex items-center justify-between">
+                                                <h3 className="font-semibold text-base">{calc.name}</h3>
+                                                <ArrowRight className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            </CardContent>
+                                        </Card>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        )
+    }
+
+    const renderFoodCalculators = () => {
+        return (
+            <div>
+                 <ReadMore text={FOOD_CALCULATORS_DATA.description} className="mb-4" />
+                
+                <div className="space-y-12 mt-8">
+                    {FOOD_CALCULATORS_DATA.subcategories.map(subCategory => (
+                        <div key={subCategory.title}>
+                             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                                <subCategory.icon className="h-6 w-6 text-primary" />
+                                {subCategory.title}
+                            </h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                {subCategory.calculators.map(calc => (
+                                    <Link href={calc.href} key={calc.name} className="group">
+                                        <Card className="h-full transition-all group-hover:shadow-md group-hover:-translate-y-0.5">
+                                            <CardContent className="p-4 flex items-center justify-between">
+                                                <h3 className="font-semibold text-base">{calc.name}</h3>
+                                                <ArrowRight className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            </CardContent>
+                                        </Card>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        )
+    }
+
+    const renderHealthCalculators = () => {
+        return (
+            <div>
+                 <ReadMore text={HEALTH_CALCULATORS_DATA.description} className="mb-4" />
+                
+                <div className="space-y-12 mt-8">
+                    {HEALTH_CALCULATORS_DATA.subcategories.map(subCategory => (
+                        <div key={subCategory.title}>
+                             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                                <subCategory.icon className="h-6 w-6 text-primary" />
+                                {subCategory.title}
+                            </h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                {subCategory.calculators.map(calc => (
+                                    <Link href={calc.href} key={calc.name} className="group">
+                                        <Card className="h-full transition-all group-hover:shadow-md group-hover:-translate-y-0.5">
+                                            <CardContent className="p-4 flex items-center justify-between">
+                                                <h3 className="font-semibold text-base">{calc.name}</h3>
+                                                <ArrowRight className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            </CardContent>
+                                        </Card>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        )
+    }
+
     return (
         <div className="container mx-auto px-4 py-8">
             <h1 className="text-4xl font-bold mb-2 text-primary">{category.name} Calculators</h1>
@@ -261,7 +357,10 @@ export default function CategoryPage({ params }: { params: { category: string } 
                          category.id === 'construction' ? renderConstructionCalculators() :
                          category.id === 'conversion' ? renderConversionCalculators() :
                          category.id === 'ecology' ? renderEcologyCalculators() :
-                         category.id === 'everyday' ? renderEverydayCalculators() : (
+                         category.id === 'everyday' ? renderEverydayCalculators() :
+                         category.id === 'finance' ? renderFinanceCalculators() :
+                         category.id === 'food' ? renderFoodCalculators() :
+                         category.id === 'health' ? renderHealthCalculators() : (
                             <div>
                                 <h2 className="text-2xl font-bold mb-4">Calculators in this category</h2>
                                 <p className="text-muted-foreground">

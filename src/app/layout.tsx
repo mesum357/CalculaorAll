@@ -9,6 +9,13 @@ import { AuthLayout } from '@/components/auth-layout';
 export const metadata: Metadata = {
   title: 'Calculator1.org',
   description: 'Over 3,700 free calculators in one place.',
+  icons: {
+    icon: [
+      { url: '/icon.png', type: 'image/png' },
+    ],
+    shortcut: '/icon.png',
+    apple: '/icon.png',
+  },
 };
 
 export default function RootLayout({

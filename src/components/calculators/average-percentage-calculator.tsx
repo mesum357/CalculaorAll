@@ -5,109 +5,63 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { X, Plus } from "lucide-react";
 
 export function AveragePercentageCalculator() {
-  const [values, setValues] = useState<string[]>([""]);
-  const [average, setAverage] = useState<number | null>(null);
+  const [values, setValues] = useState("");
+  const [result, setResult] = useState<number | null>(null);
 
-  const handleInputChange = (index: number, value: string) => {
-    const newValues = [...values];
-    newValues[index] = value;
-    setValues(newValues);
-    setAverage(null);
-  };
-
-  const addInput = () => {
-    setValues([...values, ""]);
-  };
-
-  const removeInput = (index: number) => {
-    if (values.length > 1) {
-      const newValues = values.filter((_, i) => i !== index);
-      setValues(newValues);
-    }
-  };
-
-  const calculateAverage = () => {
-    const numericValues = values
-      .map(v => parseFloat(v))
-      .filter(v => !isNaN(v));
-
-    if (numericValues.length > 0) {
-      const sum = numericValues.reduce((acc, val) => acc + val, 0);
-      const avg = sum / numericValues.length;
-      setAverage(avg);
+  const calculate = () => {
+    const valueArray = values.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+    
+    if (valueArray.length > 0) {
+      const sum = valueArray.reduce((acc, val) => acc + val, 0);
+      const average = sum / valueArray.length;
+      setResult(average);
     } else {
-      setAverage(null);
+      setResult(null);
     }
   };
-  
-  const clearAll = () => {
-    setValues([""]);
-    setAverage(null);
-  }
 
   return (
-    <Card className="w-full max-w-lg">
+    <Card className="w-full max-w-2xl">
       <CardHeader>
         <CardTitle>Average Percentage Calculator</CardTitle>
         <CardDescription>
-          Enter a list of percentage values to calculate the average.
+          Calculate the average of multiple percentage values.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <Label>Percentage Values</Label>
-          <div className="space-y-2">
-            {values.map((value, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <Input
-                  type="number"
-                  placeholder={`Value ${index + 1} (%)`}
-                  value={value}
-                  onChange={(e) => handleInputChange(index, e.target.value)}
-                  className="flex-grow"
-                />
-                 <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeInput(index)}
-                    disabled={values.length <= 1}
-                    className="flex-shrink-0"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-              </div>
-            ))}
+          <div>
+            <Label htmlFor="values">Percentage Values (comma-separated)</Label>
+            <Input
+              id="values"
+              type="text"
+              value={values}
+              onChange={(e) => setValues(e.target.value)}
+              placeholder="e.g., 75, 80, 90, 85"
+              className="mt-2"
+            />
           </div>
-           <Button variant="outline" size="sm" onClick={addInput}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add another value
+          <Button onClick={calculate} className="w-full">
+            Calculate
           </Button>
+          {result !== null && (
+            <div className="mt-6 bg-muted p-4 rounded-lg">
+              <div className="flex justify-between">
+                <span>Average Percentage:</span>
+                <span className="font-bold text-lg">{result.toFixed(2)}%</span>
+              </div>
+            </div>
+          )}
         </div>
-
-        {average !== null && (
-           <div className="mt-6 bg-muted p-4 rounded-lg">
-             <h3 className="text-lg font-semibold text-center">Result</h3>
-             <p className="text-3xl font-bold text-center mt-2 text-primary">
-               {average.toFixed(2)}%
-             </p>
-             <p className="text-sm text-muted-foreground text-center mt-1">Average Percentage</p>
-           </div>
-        )}
       </CardContent>
-      <CardFooter className="flex justify-end gap-2 mt-4">
-        <Button variant="ghost" onClick={clearAll}>Clear</Button>
-        <Button onClick={calculateAverage}>Calculate Average</Button>
-      </CardFooter>
     </Card>
   );
 }
