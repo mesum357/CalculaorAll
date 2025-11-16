@@ -102,7 +102,7 @@ export function Header() {
                           "py-3 px-4 text-sm font-medium transition-colors relative border-b-2", 
                           activeCategory === category.id 
                             ? "text-primary border-primary" 
-                            : "text-muted-foreground hover:text-foreground border-transparent"
+                            : "text-gray-700 dark:text-muted-foreground hover:text-foreground border-transparent"
                         )}>
                         {category.name}
                       </div>

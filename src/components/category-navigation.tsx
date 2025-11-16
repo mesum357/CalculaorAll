@@ -23,7 +23,7 @@ export function CategoryNavigation() {
                 <span className="font-semibold font-headline text-lg text-foreground">
                   {category.name}
                 </span>
-                <p className="text-sm text-muted-foreground">{category.count} calculators</p>
+                <p className="text-sm text-gray-600 dark:text-muted-foreground">{category.count} calculators</p>
               </CardContent>
             </Card>
           </Link>
@@ -37,7 +37,7 @@ export function CategoryNavigation() {
                 <span className="font-semibold font-headline text-lg text-foreground">
                   More
                 </span>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-gray-600 dark:text-muted-foreground">
                   {remainingCategories.length} more categories
                 </p>
               </CardContent>

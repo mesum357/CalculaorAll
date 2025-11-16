@@ -1,5 +1,4 @@
 
-import { CategoryList } from '@/components/category-list';
 import { CATEGORIES } from '@/lib/categories';
 import { MATH_CALCULATORS_DATA } from '@/lib/math-calculators';
 import { BIOLOGY_CALCULATORS_DATA } from '@/lib/biology-calculators';
@@ -345,12 +344,7 @@ export default function CategoryPage({ params }: { params: { category: string } 
                 Browse through our collection of {category.count} free {category.name.toLowerCase()} calculators.
             </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div className="md:col-span-1">
-                    <CategoryList currentCategory={category.id}/>
-                </div>
-                <div className="md:col-span-3">
-                    <div className="bg-card p-6 rounded-lg shadow-sm">
+            <div className="bg-card p-6 rounded-lg shadow-sm">
                         {category.id === 'math' ? renderMathCalculators() : 
                          category.id === 'biology' ? renderBiologyCalculators() :
                          category.id === 'chemistry' ? renderChemistryCalculators() :
@@ -368,8 +362,6 @@ export default function CategoryPage({ params }: { params: { category: string } 
                                 </p>
                             </div>
                         )}
-                    </div>
-                </div>
             </div>
         </div>
     );

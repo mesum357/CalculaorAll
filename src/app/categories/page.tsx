@@ -34,7 +34,7 @@ export default function AllCategoriesPage() {
                 <span className="font-semibold font-headline text-lg text-foreground">
                   {category.name}
                 </span>
-                <p className="text-sm text-muted-foreground">{category.count} calculators</p>
+                <p className="text-sm text-gray-600 dark:text-muted-foreground">{category.count} calculators</p>
               </CardContent>
             </Card>
           </Link>
