@@ -1,13 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import React, { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -67,7 +61,7 @@ export function FourTScoreCalculator() {
               placeholder="0-2"
               className="mt-2"
             />
-            <p className="text-xs text-muted-foreground mt-1">2: >50% fall or nadir 20-100k, 1: 30-50% fall or nadir 10-19k, 0: <30% fall or nadir <10k</p>
+            <p className="text-xs text-muted-foreground mt-1">2: &gt;50% fall or nadir 20-100k, 1: 30-50% fall or nadir 10-19k, 0: &lt;30% fall or nadir &lt;10k</p>
           </div>
           <div>
             <Label htmlFor="timing">T2: Timing (0-2)</Label>
@@ -81,7 +75,7 @@ export function FourTScoreCalculator() {
               placeholder="0-2"
               className="mt-2"
             />
-            <p className="text-xs text-muted-foreground mt-1">2: Day 5-10 or ≤1 day if recent exposure, 1: >Day 10 or unclear, 0: <Day 4</p>
+            <p className="text-xs text-muted-foreground mt-1">2: Day 5-10 or ≤1 day if recent exposure, 1: &gt;Day 10 or unclear, 0: &lt;Day 4</p>
           </div>
           <div>
             <Label htmlFor="thrombosis">T3: Thrombosis (0-2)</Label>
