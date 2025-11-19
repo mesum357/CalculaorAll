@@ -299,11 +299,52 @@ export const api = {
       return response.json();
     },
     getSession: async () => {
-      const response = await fetch(`${API_BASE_URL}/auth/session`, {
-        credentials: 'include',
+      const url = `${API_BASE_URL}/auth/session`;
+      
+      console.log('[API] Get session request:', {
+        url,
+        timestamp: new Date().toISOString(),
+        cookies: document.cookie
       });
-      if (!response.ok) throw new Error('Failed to get session');
-      return response.json();
+      
+      try {
+        const response = await fetch(url, {
+          credentials: 'include',
+        });
+        
+        console.log('[API] Get session response:', {
+          url,
+          status: response.status,
+          statusText: response.statusText,
+          ok: response.ok,
+          headers: Object.fromEntries(response.headers.entries())
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('[API] Get session error:', {
+            url,
+            status: response.status,
+            error: errorText
+          });
+          throw new Error(`Failed to get session: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('[API] Get session success:', {
+          url,
+          data
+        });
+        
+        return data;
+      } catch (error) {
+        console.error('[API] Get session fetch error:', {
+          url,
+          error: error instanceof Error ? error.message : error,
+          stack: error instanceof Error ? error.stack : undefined
+        });
+        throw error;
+      }
     },
   },
 };
