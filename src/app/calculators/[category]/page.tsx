@@ -1,23 +1,12 @@
-
-import { CATEGORIES } from '@/lib/categories';
-import { MATH_CALCULATORS_DATA } from '@/lib/math-calculators';
-import { BIOLOGY_CALCULATORS_DATA } from '@/lib/biology-calculators';
-import { CHEMISTRY_CALCULATORS_DATA } from '@/lib/chemistry-calculators';
-import { CONSTRUCTION_CALCULATORS_DATA } from '@/lib/construction-calculators';
-import { CONVERSION_CALCULATORS_DATA } from '@/lib/conversion-calculators';
-import { ECOLOGY_CALCULATORS_DATA } from '@/lib/ecology-calculators';
-import { EVERYDAY_CALCULATORS_DATA } from '@/lib/everyday-calculators';
-import { FINANCE_CALCULATORS_DATA } from '@/lib/finance-calculators';
-import { FOOD_CALCULATORS_DATA } from '@/lib/food-calculators';
-import { HEALTH_CALCULATORS_DATA } from '@/lib/health-calculators';
+import { getCategories } from '@/lib/categories';
+import { api } from '@/lib/api';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowRight } from 'lucide-react';
-import { ReadMore } from '@/components/read-more';
 
-export default function CategoryPage({ params }: { params: { category: string } }) {
-    const category = CATEGORIES.find(c => c.id === params.category);
+export default async function CategoryPage({ params }: { params: { category: string } }) {
+    const allCategories = await getCategories();
+    const category = allCategories.find(c => c.slug === params.category);
 
     if (!category) {
         return (
@@ -27,348 +16,102 @@ export default function CategoryPage({ params }: { params: { category: string } 
         );
     }
 
-    const renderMathCalculators = () => {
-        return (
-            <div>
-                 <ReadMore text={MATH_CALCULATORS_DATA.description} className="mb-4" />
-                
-                <div className="space-y-12 mt-8">
-                    {MATH_CALCULATORS_DATA.subcategories.map(subCategory => (
-                        <div key={subCategory.title}>
-                             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                                <subCategory.icon className="h-6 w-6 text-primary" />
-                                {subCategory.title}
-                            </h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                {subCategory.calculators.map(calc => (
-                                    <Link href={calc.href} key={calc.name} className="group">
-                                        <Card className="h-full transition-all group-hover:shadow-md group-hover:-translate-y-0.5">
-                                            <CardContent className="p-4 flex items-center justify-between">
-                                                <h3 className="font-semibold text-base">{calc.name}</h3>
-                                                <ArrowRight className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            </CardContent>
-                                        </Card>
-                                    </Link>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        )
-    }
+    // Fetch calculators for this category
+    const calculators = await api.calculators.getAll({ 
+        category_id: category.id, 
+        is_active: true 
+    });
 
-    const renderBiologyCalculators = () => {
-        return (
-            <div>
-                 <ReadMore text={BIOLOGY_CALCULATORS_DATA.description} className="mb-4" />
-                
-                <div className="space-y-12 mt-8">
-                    {BIOLOGY_CALCULATORS_DATA.subcategories.map(subCategory => (
-                        <div key={subCategory.title}>
-                             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                                <subCategory.icon className="h-6 w-6 text-primary" />
-                                {subCategory.title}
-                            </h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                {subCategory.calculators.map(calc => (
-                                    <Link href={calc.href} key={calc.name} className="group">
-                                        <Card className="h-full transition-all group-hover:shadow-md group-hover:-translate-y-0.5">
-                                            <CardContent className="p-4 flex items-center justify-between">
-                                                <h3 className="font-semibold text-base">{calc.name}</h3>
-                                                <ArrowRight className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            </CardContent>
-                                        </Card>
-                                    </Link>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        )
-    }
+    // Fetch subcategories for this category
+    const subcategories = await api.subcategories.getAll(category.id);
 
-    const renderChemistryCalculators = () => {
-        return (
-            <div>
-                 <ReadMore text={CHEMISTRY_CALCULATORS_DATA.description} className="mb-4" />
-                
-                <div className="space-y-12 mt-8">
-                    {CHEMISTRY_CALCULATORS_DATA.subcategories.map(subCategory => (
-                        <div key={subCategory.title}>
-                             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                                <subCategory.icon className="h-6 w-6 text-primary" />
-                                {subCategory.title}
-                            </h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                {subCategory.calculators.map(calc => (
-                                    <Link href={calc.href} key={calc.name} className="group">
-                                        <Card className="h-full transition-all group-hover:shadow-md group-hover:-translate-y-0.5">
-                                            <CardContent className="p-4 flex items-center justify-between">
-                                                <h3 className="font-semibold text-base">{calc.name}</h3>
-                                                <ArrowRight className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            </CardContent>
-                                        </Card>
-                                    </Link>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        )
-    }
+    // Group calculators by subcategory
+    const calculatorsBySubcategory: Record<number, typeof calculators> = {};
+    calculators.forEach(calc => {
+        if (!calculatorsBySubcategory[calc.subcategory_id]) {
+            calculatorsBySubcategory[calc.subcategory_id] = [];
+        }
+        calculatorsBySubcategory[calc.subcategory_id].push(calc);
+    });
 
-    const renderConstructionCalculators = () => {
-        return (
-            <div>
-                 <ReadMore text={CONSTRUCTION_CALCULATORS_DATA.description} className="mb-4" />
-                
-                <div className="space-y-12 mt-8">
-                    {CONSTRUCTION_CALCULATORS_DATA.subcategories.map(subCategory => (
-                        <div key={subCategory.title}>
-                             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                                <subCategory.icon className="h-6 w-6 text-primary" />
-                                {subCategory.title}
-                            </h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                {subCategory.calculators.map(calc => (
-                                    <Link href={calc.href} key={calc.name} className="group">
-                                        <Card className="h-full transition-all group-hover:shadow-md group-hover:-translate-y-0.5">
-                                            <CardContent className="p-4 flex items-center justify-between">
-                                                <h3 className="font-semibold text-base">{calc.name}</h3>
-                                                <ArrowRight className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            </CardContent>
-                                        </Card>
-                                    </Link>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        )
-    }
-
-    const renderConversionCalculators = () => {
-        return (
-            <div>
-                 <ReadMore text={CONVERSION_CALCULATORS_DATA.description} className="mb-4" />
-                
-                <div className="space-y-12 mt-8">
-                    {CONVERSION_CALCULATORS_DATA.subcategories.map(subCategory => (
-                        <div key={subCategory.title}>
-                             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                                <subCategory.icon className="h-6 w-6 text-primary" />
-                                {subCategory.title}
-                            </h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                {subCategory.calculators.map(calc => (
-                                    <Link href={calc.href} key={calc.name} className="group">
-                                        <Card className="h-full transition-all group-hover:shadow-md group-hover:-translate-y-0.5">
-                                            <CardContent className="p-4 flex items-center justify-between">
-                                                <h3 className="font-semibold text-base">{calc.name}</h3>
-                                                <ArrowRight className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            </CardContent>
-                                        </Card>
-                                    </Link>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        )
-    }
-
-    const renderEcologyCalculators = () => {
-        return (
-            <div>
-                 <ReadMore text={ECOLOGY_CALCULATORS_DATA.description} className="mb-4" />
-                
-                <div className="space-y-12 mt-8">
-                    {ECOLOGY_CALCULATORS_DATA.subcategories.map(subCategory => (
-                        <div key={subCategory.title}>
-                             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                                <subCategory.icon className="h-6 w-6 text-primary" />
-                                {subCategory.title}
-                            </h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                {subCategory.calculators.map(calc => (
-                                    <Link href={calc.href} key={calc.name} className="group">
-                                        <Card className="h-full transition-all group-hover:shadow-md group-hover:-translate-y-0.5">
-                                            <CardContent className="p-4 flex items-center justify-between">
-                                                <h3 className="font-semibold text-base">{calc.name}</h3>
-                                                <ArrowRight className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            </CardContent>
-                                        </Card>
-                                    </Link>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        )
-    }
-
-    const renderEverydayCalculators = () => {
-        return (
-            <div>
-                 <ReadMore text={EVERYDAY_CALCULATORS_DATA.description} className="mb-4" />
-                
-                <div className="space-y-12 mt-8">
-                    {EVERYDAY_CALCULATORS_DATA.subcategories.map(subCategory => (
-                        <div key={subCategory.title}>
-                             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                                <subCategory.icon className="h-6 w-6 text-primary" />
-                                {subCategory.title}
-                            </h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                {subCategory.calculators.map(calc => (
-                                    <Link href={calc.href} key={calc.name} className="group">
-                                        <Card className="h-full transition-all group-hover:shadow-md group-hover:-translate-y-0.5">
-                                            <CardContent className="p-4 flex items-center justify-between">
-                                                <h3 className="font-semibold text-base">{calc.name}</h3>
-                                                <ArrowRight className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            </CardContent>
-                                        </Card>
-                                    </Link>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        )
-    }
-
-    const renderFinanceCalculators = () => {
-        return (
-            <div>
-                 <ReadMore text={FINANCE_CALCULATORS_DATA.description} className="mb-4" />
-                
-                <div className="space-y-12 mt-8">
-                    {FINANCE_CALCULATORS_DATA.subcategories.map(subCategory => (
-                        <div key={subCategory.title}>
-                             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                                <subCategory.icon className="h-6 w-6 text-primary" />
-                                {subCategory.title}
-                            </h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                {subCategory.calculators.map(calc => (
-                                    <Link href={calc.href} key={calc.name} className="group">
-                                        <Card className="h-full transition-all group-hover:shadow-md group-hover:-translate-y-0.5">
-                                            <CardContent className="p-4 flex items-center justify-between">
-                                                <h3 className="font-semibold text-base">{calc.name}</h3>
-                                                <ArrowRight className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            </CardContent>
-                                        </Card>
-                                    </Link>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        )
-    }
-
-    const renderFoodCalculators = () => {
-        return (
-            <div>
-                 <ReadMore text={FOOD_CALCULATORS_DATA.description} className="mb-4" />
-                
-                <div className="space-y-12 mt-8">
-                    {FOOD_CALCULATORS_DATA.subcategories.map(subCategory => (
-                        <div key={subCategory.title}>
-                             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                                <subCategory.icon className="h-6 w-6 text-primary" />
-                                {subCategory.title}
-                            </h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                {subCategory.calculators.map(calc => (
-                                    <Link href={calc.href} key={calc.name} className="group">
-                                        <Card className="h-full transition-all group-hover:shadow-md group-hover:-translate-y-0.5">
-                                            <CardContent className="p-4 flex items-center justify-between">
-                                                <h3 className="font-semibold text-base">{calc.name}</h3>
-                                                <ArrowRight className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            </CardContent>
-                                        </Card>
-                                    </Link>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        )
-    }
-
-    const renderHealthCalculators = () => {
-        return (
-            <div>
-                 <ReadMore text={HEALTH_CALCULATORS_DATA.description} className="mb-4" />
-                
-                <div className="space-y-12 mt-8">
-                    {HEALTH_CALCULATORS_DATA.subcategories.map(subCategory => (
-                        <div key={subCategory.title}>
-                             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                                <subCategory.icon className="h-6 w-6 text-primary" />
-                                {subCategory.title}
-                            </h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                {subCategory.calculators.map(calc => (
-                                    <Link href={calc.href} key={calc.name} className="group">
-                                        <Card className="h-full transition-all group-hover:shadow-md group-hover:-translate-y-0.5">
-                                            <CardContent className="p-4 flex items-center justify-between">
-                                                <h3 className="font-semibold text-base">{calc.name}</h3>
-                                                <ArrowRight className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            </CardContent>
-                                        </Card>
-                                    </Link>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        )
-    }
+    // Sort subcategories by name
+    const sortedSubcategories = [...subcategories].sort((a, b) => 
+        a.name.localeCompare(b.name)
+    );
 
     return (
         <div className="container mx-auto px-4 py-8">
             <h1 className="text-4xl font-bold mb-2 text-primary">{category.name} Calculators</h1>
             <p className="text-muted-foreground mb-8">
-                Browse through our collection of {category.count} free {category.name.toLowerCase()} calculators.
+                Browse through our collection of {calculators.length} free {category.name.toLowerCase()} calculators.
             </p>
             
             <div className="bg-card p-6 rounded-lg shadow-sm">
-                        {category.id === 'math' ? renderMathCalculators() : 
-                         category.id === 'biology' ? renderBiologyCalculators() :
-                         category.id === 'chemistry' ? renderChemistryCalculators() :
-                         category.id === 'construction' ? renderConstructionCalculators() :
-                         category.id === 'conversion' ? renderConversionCalculators() :
-                         category.id === 'ecology' ? renderEcologyCalculators() :
-                         category.id === 'everyday' ? renderEverydayCalculators() :
-                         category.id === 'finance' ? renderFinanceCalculators() :
-                         category.id === 'food' ? renderFoodCalculators() :
-                         category.id === 'health' ? renderHealthCalculators() : (
-                            <div>
-                                <h2 className="text-2xl font-bold mb-4">Calculators in this category</h2>
-                                <p className="text-muted-foreground">
-                                    Placeholder for the list of calculators in the {category.name} category.
-                                </p>
-                            </div>
-                        )}
+                {sortedSubcategories.length > 0 ? (
+                    <div className="space-y-12 mt-8">
+                        {sortedSubcategories.map(subcategory => {
+                            const subcategoryCalculators = calculatorsBySubcategory[subcategory.id] || [];
+                            if (subcategoryCalculators.length === 0) return null;
+                            
+                            return (
+                                <div key={subcategory.id}>
+                                    <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                                        <ArrowRight className="h-6 w-6 text-primary" />
+                                        {subcategory.name}
+                                    </h2>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                        {subcategoryCalculators.map(calc => (
+                                            <Link 
+                                                href={`/calculators/${category.slug}/${calc.slug}`} 
+                                                key={calc.id} 
+                                                className="group"
+                                            >
+                                                <Card className="h-full transition-all group-hover:shadow-md group-hover:-translate-y-0.5">
+                                                    <CardContent className="p-4 flex items-center justify-between">
+                                                        <h3 className="font-semibold text-base">{calc.name}</h3>
+                                                        <ArrowRight className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    </CardContent>
+                                                </Card>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : calculators.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        {calculators.map(calc => (
+                            <Link 
+                                href={`/calculators/${category.slug}/${calc.slug}`} 
+                                key={calc.id} 
+                                className="group"
+                            >
+                                <Card className="h-full transition-all group-hover:shadow-md group-hover:-translate-y-0.5">
+                                    <CardContent className="p-4 flex items-center justify-between">
+                                        <h3 className="font-semibold text-base">{calc.name}</h3>
+                                        <ArrowRight className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    </CardContent>
+                                </Card>
+                            </Link>
+                        ))}
+                    </div>
+                ) : (
+                    <div>
+                        <h2 className="text-2xl font-bold mb-4">No calculators found</h2>
+                        <p className="text-muted-foreground">
+                            There are no calculators available in the {category.name} category yet.
+                        </p>
+                    </div>
+                )}
             </div>
         </div>
     );
 }
 
 export async function generateStaticParams() {
-    return CATEGORIES.map(category => ({
-        category: category.id,
+    const categories = await getCategories();
+    return categories.map(category => ({
+        category: category.slug,
     }));
 }

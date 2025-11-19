@@ -14,16 +14,20 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { CATEGORIES } from "@/lib/categories";
+import { getCategories, type Category } from "@/lib/categories";
 import { cn } from "@/lib/utils";
 import { usePathname } from 'next/navigation';
 import { Logo } from "./logo";
+import { useAuth } from "@/contexts/auth-context";
+import { UserProfileMenu } from "./user-profile-menu";
 
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
   const pathname = usePathname();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -33,15 +37,26 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const currentCategory = CATEGORIES.find(c => pathname?.includes(c.href));
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const cats = await getCategories();
+        setCategories(cats);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    }
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
+    const currentCategory = categories.find(c => pathname?.includes(c.href));
     if (currentCategory) {
-      setActiveCategory(currentCategory.id);
+      setActiveCategory(currentCategory.slug);
     } else {
       setActiveCategory(null);
     }
-  }, [currentCategory]);
+  }, [categories, pathname]);
 
 
   return (
@@ -75,14 +90,22 @@ export function Header() {
                 <span className="sr-only">Search</span>
             </Button>
           <ThemeToggle />
-            <div className="hidden md:flex items-center gap-2">
-                <Button variant="ghost" asChild>
+          {!loading && (
+            <>
+              {user ? (
+                <UserProfileMenu />
+              ) : (
+                <div className="hidden md:flex items-center gap-2">
+                  <Button variant="ghost" asChild>
                     <Link href="/auth">Login</Link>
-                </Button>
-                <Button asChild>
+                  </Button>
+                  <Button asChild>
                     <Link href="/auth">Sign Up</Link>
-                </Button>
-            </div>
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
       <nav className="border-t">
@@ -95,12 +118,12 @@ export function Header() {
               className="w-full"
             >
               <CarouselContent>
-                {CATEGORIES.map((category) => (
+                {categories.map((category) => (
                   <CarouselItem key={category.id} className="basis-auto">
                     <Link href={category.href}>
                       <div className={cn(
                           "py-3 px-4 text-sm font-medium transition-colors relative border-b-2", 
-                          activeCategory === category.id 
+                          activeCategory === category.slug 
                             ? "text-primary border-primary" 
                             : "text-gray-700 dark:text-muted-foreground hover:text-foreground border-transparent"
                         )}>

@@ -18,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -32,48 +32,269 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { api, type Calculator } from '@/lib/api';
+import { useAuth } from '@/contexts/auth-context';
+import { useRouter } from 'next/navigation';
 
-const relatedCalculators = [
-    {
-        name: "Percentage Calculator",
-        description: "Calculate the percentage of a number.",
-        href: "#",
-    },
-    {
-        name: "Percentage Change Calculator",
-        description: "Find the percentage change between two values.",
-        href: "#",
-    },
-    {
-        name: "Percentage Increase Calculator",
-        description: "Calculate the result of a percentage increase.",
-        href: "#",
-    },
-    {
-        name: "Fraction to Percent Calculator",
-        description: "Convert fractions to percentages easily.",
-        href: "#",
-    },
-];
+interface CalculatorInfoProps {
+  calculator: Calculator | null;
+}
 
-export function CalculatorInfo() {
+interface Comment {
+  id: number;
+  comment: string;
+  createdAt: string;
+  updatedAt: string;
+  userName: string;
+  isAuthenticated?: boolean;
+}
+
+export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
+  const { user } = useAuth();
+  const router = useRouter();
+  const [relatedCalculators, setRelatedCalculators] = useState<Calculator[]>([]);
+  const [loadingRelated, setLoadingRelated] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [loadingLikes, setLoadingLikes] = useState(true);
   const [rating, setRating] = useState(0);
+  const [userRating, setUserRating] = useState<number | null>(null);
+  const [averageRating, setAverageRating] = useState(0);
+  const [totalRatings, setTotalRatings] = useState(0);
+  const [loadingRatings, setLoadingRatings] = useState(true);
+  const [comment, setComment] = useState("");
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [loadingComments, setLoadingComments] = useState(true);
+  const [submittingComment, setSubmittingComment] = useState(false);
   const { toast } = useToast();
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    if (!isLiked) {
-         toast({
-            title: "Added to favorites!",
-            description: "You can find it in your profile.",
+  // Fetch related calculators from the same subcategory
+  useEffect(() => {
+    async function fetchRelatedCalculators() {
+      if (!calculator) return;
+
+      try {
+        setLoadingRelated(true);
+        const calculators = await api.calculators.getAll({
+          subcategory_id: calculator.subcategory_id,
+          is_active: true,
         });
-    } else {
-        toast({
-            title: "Removed from favorites.",
-        });
+
+        // Filter out the current calculator and limit to 4
+        const related = calculators
+          .filter((calc: Calculator) => calc.id !== calculator.id)
+          .slice(0, 4);
+
+        setRelatedCalculators(related);
+      } catch (error) {
+        console.error('Error fetching related calculators:', error);
+      } finally {
+        setLoadingRelated(false);
+      }
     }
-  }
+
+    fetchRelatedCalculators();
+  }, [calculator]);
+
+  // Fetch likes
+  useEffect(() => {
+    async function fetchLikes() {
+      if (!calculator) return;
+
+      try {
+        setLoadingLikes(true);
+        const data = await api.calculatorInteractions.getLikes(calculator.id);
+        setIsLiked(data.isLiked);
+        setLikeCount(data.likeCount);
+      } catch (error) {
+        console.error('Error fetching likes:', error);
+      } finally {
+        setLoadingLikes(false);
+      }
+    }
+
+    fetchLikes();
+  }, [calculator]);
+
+  // Fetch ratings
+  useEffect(() => {
+    async function fetchRatings() {
+      if (!calculator) return;
+
+      try {
+        setLoadingRatings(true);
+        const data = await api.calculatorInteractions.getRatings(calculator.id);
+        setAverageRating(data.averageRating);
+        setTotalRatings(data.totalRatings);
+        setUserRating(data.userRating);
+        if (data.userRating) {
+          setRating(data.userRating);
+        }
+      } catch (error) {
+        console.error('Error fetching ratings:', error);
+      } finally {
+        setLoadingRatings(false);
+      }
+    }
+
+    fetchRatings();
+  }, [calculator]);
+
+  // Fetch comments
+  useEffect(() => {
+    async function fetchComments() {
+      if (!calculator) return;
+
+      try {
+        setLoadingComments(true);
+        const data = await api.calculatorInteractions.getComments(calculator.id);
+        setComments(data);
+      } catch (error) {
+        console.error('Error fetching comments:', error);
+      } finally {
+        setLoadingComments(false);
+      }
+    }
+
+    fetchComments();
+  }, [calculator]);
+
+  const handleLike = async () => {
+    if (!calculator) return;
+
+    // Check authentication
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to like calculators.",
+        variant: "destructive",
+      });
+      router.push('/auth');
+      return;
+    }
+
+    try {
+      const data = await api.calculatorInteractions.toggleLike(calculator.id);
+      setIsLiked(data.liked);
+      
+      // Refresh like count
+      const likesData = await api.calculatorInteractions.getLikes(calculator.id);
+      setLikeCount(likesData.likeCount);
+
+      toast({
+        title: data.liked ? "Added to favorites!" : "Removed from favorites",
+        description: data.liked ? "You can find it in your profile." : "",
+      });
+    } catch (error: any) {
+      console.error('Error toggling like:', error);
+      if (error.message && error.message.includes('Authentication required')) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to like calculators.",
+          variant: "destructive",
+        });
+        router.push('/auth');
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to update like. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const handleRatingClick = async (star: number) => {
+    if (!calculator) return;
+
+    // Check authentication
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to rate calculators.",
+        variant: "destructive",
+      });
+      router.push('/auth');
+      return;
+    }
+
+    try {
+      await api.calculatorInteractions.submitRating(calculator.id, star);
+      setRating(star);
+      setUserRating(star);
+      
+      // Refresh rating stats
+      const data = await api.calculatorInteractions.getRatings(calculator.id);
+      setAverageRating(data.averageRating);
+      setTotalRatings(data.totalRatings);
+
+      toast({
+        title: "Rating submitted!",
+        description: "Thank you for your feedback.",
+      });
+    } catch (error: any) {
+      console.error('Error submitting rating:', error);
+      if (error.message && error.message.includes('Authentication required')) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to rate calculators.",
+          variant: "destructive",
+        });
+        router.push('/auth');
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to submit rating. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const handleSubmitComment = async () => {
+    if (!calculator || !comment.trim()) return;
+
+    // Check authentication
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to comment on calculators.",
+        variant: "destructive",
+      });
+      router.push('/auth');
+      return;
+    }
+
+    try {
+      setSubmittingComment(true);
+      const newComment = await api.calculatorInteractions.submitComment(calculator.id, comment);
+      setComments([newComment, ...comments]);
+      setComment("");
+      
+      toast({
+        title: "Comment submitted!",
+        description: "Thank you for your feedback.",
+      });
+    } catch (error: any) {
+      console.error('Error submitting comment:', error);
+      if (error.message && error.message.includes('Authentication required')) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to comment on calculators.",
+          variant: "destructive",
+        });
+        router.push('/auth');
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to submit comment. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
 
 
   return (
@@ -81,26 +302,14 @@ export function CalculatorInfo() {
       <Card className="w-full">
         <CardContent className="p-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6">
-             <AlertDialog>
-                <AlertDialogTrigger asChild>
-                    <Button variant={isLiked ? "default" : "outline"} onClick={handleLike}>
-                        <Heart className="w-4 h-4 mr-2" />
-                        {isLiked ? "Liked" : "Like"}
-                    </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                    <AlertDialogTitle>Sign up to save your favorites!</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        To like and save this calculator to your profile, you need to be logged in. Create an account to get started.
-                    </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction asChild><Link href="/auth">Sign Up</Link></AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <Button 
+              variant={isLiked ? "default" : "outline"} 
+              onClick={handleLike}
+              disabled={loadingLikes}
+            >
+              <Heart className={`w-4 h-4 mr-2 ${isLiked ? 'fill-current' : ''}`} />
+              {loadingLikes ? "Loading..." : `${isLiked ? "Liked" : "Like"} ${likeCount > 0 ? `(${likeCount})` : ''}`}
+            </Button>
             <Button asChild variant="outline">
                 <Link href="/get-app">
                     <Smartphone className="w-4 h-4 mr-2" />
@@ -120,39 +329,97 @@ export function CalculatorInfo() {
           </div>
 
           <Tabs defaultValue="about" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="about">About</TabsTrigger>
-              <TabsTrigger value="how-to-use">How to use</TabsTrigger>
-              <TabsTrigger value="rate">Rate</TabsTrigger>
+              <TabsTrigger value="rate">Rate & Comments</TabsTrigger>
             </TabsList>
             <TabsContent value="about" className="pt-4 text-sm text-muted-foreground prose dark:prose-invert max-w-none">
-                <p>The Average Percentage Calculator is a tool designed to find the average of a set of percentage values. It's particularly useful in scenarios where you need to aggregate multiple percentages into a single, representative average, such as calculating average grades, survey results, or financial returns.</p>
-                <p>The unique proposition of this calculator is its simplicity and clarity. It allows users to dynamically add or remove input fields, making it flexible for various data set sizes. The result is displayed clearly, providing an immediate and understandable output without complex configurations.</p>
-            </TabsContent>
-            <TabsContent value="how-to-use" className="pt-4 text-sm text-muted-foreground prose dark:prose-invert max-w-none">
-                <ol className="list-decimal pl-5">
-                    <li><b>Enter Percentage Values:</b> Start by entering your percentage values into the input fields. The initial field is ready for your first value.</li>
-                    <li><b>Add More Fields:</b> If you have more than one percentage to average, click the "Add another value" button to create additional input fields.</li>
-                    <li><b>Remove Fields:</b> To remove an input field, click the 'X' button next to it. You can remove any field except the last one.</li>
-                    <li><b>Calculate:</b> Once all your percentage values are entered, click the "Calculate Average" button.</li>
-                    <li><b>View Result:</b> The calculated average will be displayed clearly in the result section below the inputs.</li>
-                    <li><b>Start Over:</b> To perform a new calculation, click the "Clear" button to reset all input fields and the result.</li>
-                </ol>
+                {calculator?.description ? (
+                  <p className="whitespace-pre-line">{calculator.description}</p>
+                ) : (
+                  <p>No description available for this calculator.</p>
+                )}
             </TabsContent>
             <TabsContent value="rate" className="pt-4">
-              <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">How would you rate this calculator?</p>
-                <div className="flex items-center gap-2">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      className={`h-6 w-6 cursor-pointer ${rating >= star ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
-                      onClick={() => setRating(star)}
+              <div className="space-y-6">
+                {/* Rating Section */}
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm font-medium mb-2">How would you rate this calculator?</p>
+                    <div className="flex items-center gap-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`h-6 w-6 cursor-pointer transition-colors ${
+                            rating >= star ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'
+                          }`}
+                          onClick={() => handleRatingClick(star)}
+                        />
+                      ))}
+                      {loadingRatings ? (
+                        <span className="text-sm text-muted-foreground ml-2">Loading...</span>
+                      ) : (
+                        <span className="text-sm text-muted-foreground ml-2">
+                          {averageRating > 0 ? `${averageRating.toFixed(1)}` : 'No ratings yet'} 
+                          {totalRatings > 0 && ` (${totalRatings} ${totalRatings === 1 ? 'rating' : 'ratings'})`}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Comment Input */}
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">Leave a comment</p>
+                    <Textarea 
+                      placeholder="Share your thoughts about this calculator..." 
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                      rows={4}
                     />
-                  ))}
+                    <Button 
+                      onClick={handleSubmitComment}
+                      disabled={!comment.trim() || submittingComment}
+                    >
+                      {submittingComment ? "Submitting..." : "Submit Comment"}
+                    </Button>
+                  </div>
                 </div>
-                <Textarea placeholder="Leave a comment... (optional)" />
-                <Button>Submit Feedback</Button>
+
+                {/* Comments Display */}
+                <div className="space-y-4 border-t pt-4">
+                  <h3 className="text-lg font-semibold">Comments ({comments.length})</h3>
+                  {loadingComments ? (
+                    <div className="space-y-3">
+                      {[...Array(3)].map((_, i) => (
+                        <div key={i} className="animate-pulse space-y-2">
+                          <div className="h-4 bg-muted rounded w-1/4"></div>
+                          <div className="h-20 bg-muted rounded"></div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : comments.length > 0 ? (
+                    <div className="space-y-4">
+                      {comments.map((commentItem) => (
+                        <Card key={commentItem.id}>
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between mb-2">
+                              <span className="text-xs text-muted-foreground">
+                                <span className={commentItem.isAuthenticated ? "font-medium text-foreground" : ""}>
+                                  {commentItem.userName}
+                                </span>
+                                {' • '}
+                                {new Date(commentItem.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <p className="text-sm whitespace-pre-wrap">{commentItem.comment}</p>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No comments yet. Be the first to comment!</p>
+                  )}
+                </div>
               </div>
             </TabsContent>
           </Tabs>
@@ -161,24 +428,42 @@ export function CalculatorInfo() {
 
       <div className="mt-8">
         <h2 className="text-2xl font-bold mb-4">Related Calculators</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {relatedCalculators.map(calc => (
-              <Card key={calc.name}>
-                  <CardHeader>
-                      <CardTitle className="text-lg">{calc.name}</CardTitle>
-                      <CardDescription>{calc.description}</CardDescription>
-                  </CardHeader>
-                  <CardFooter>
-                      <Button asChild variant="secondary" className="w-full">
-                          <Link href={calc.href}>
-                              Launch
-                              <ArrowRight className="ml-2 h-4 w-4" />
-                          </Link>
-                      </Button>
-                  </CardFooter>
+        {loadingRelated ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <Card key={i} className="animate-pulse">
+                <CardHeader>
+                  <div className="h-6 bg-muted rounded w-3/4 mb-2"></div>
+                  <div className="h-4 bg-muted rounded w-full"></div>
+                </CardHeader>
+                <CardFooter>
+                  <div className="h-10 bg-muted rounded w-full"></div>
+                </CardFooter>
               </Card>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : relatedCalculators.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {relatedCalculators.map(calc => (
+              <Card key={calc.id}>
+                <CardHeader>
+                  <CardTitle className="text-lg">{calc.name}</CardTitle>
+                  <CardDescription>{calc.description || 'No description available.'}</CardDescription>
+                </CardHeader>
+                <CardFooter>
+                  <Button asChild variant="secondary" className="w-full">
+                    <Link href={`/calculators/${calc.category_slug}/${calc.slug}`}>
+                      Launch
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <p className="text-muted-foreground">No related calculators found.</p>
+        )}
       </div>
     </div>
   );

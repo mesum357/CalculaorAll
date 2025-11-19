@@ -1,13 +1,43 @@
+'use client';
+
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
-import { CATEGORIES } from '@/lib/categories';
+import { getMainCategories, type Category } from '@/lib/categories';
 import { MoreHorizontal } from 'lucide-react';
-
-const INITIAL_CATEGORIES_COUNT = 6;
+import { useEffect, useState } from 'react';
 
 export function CategoryNavigation() {
-  const initialCategories = CATEGORIES.slice(0, INITIAL_CATEGORIES_COUNT);
-  const remainingCategories = CATEGORIES.slice(INITIAL_CATEGORIES_COUNT);
+  const [mainCategories, setMainCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const categories = await getMainCategories();
+        setMainCategories(categories);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchCategories();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="mt-16">
+        <h2 className="text-3xl font-bold text-center font-headline mb-8">
+          Browse by Category
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {[...Array(13)].map((_, i) => (
+            <Card key={i} className="h-32 animate-pulse bg-muted" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-16">
@@ -15,8 +45,8 @@ export function CategoryNavigation() {
         Browse by Category
       </h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {initialCategories.map((category) => (
-          <Link href={category.href} key={category.name} className="group">
+        {mainCategories.map((category) => (
+          <Link href={category.href} key={category.slug} className="group">
             <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 h-full bg-white dark:bg-card">
               <CardContent className="p-6 flex flex-col items-start justify-center gap-3 text-left">
                 <category.icon className="h-8 w-8 text-primary mb-2" />
@@ -29,21 +59,19 @@ export function CategoryNavigation() {
           </Link>
         ))}
         
-        {remainingCategories.length > 0 && (
-          <Link href="/categories" className="group">
-            <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 h-full bg-white dark:bg-card">
-              <CardContent className="p-6 flex flex-col items-center justify-center gap-3 text-center h-full">
-                <MoreHorizontal className="h-8 w-8 text-primary mb-2" />
-                <span className="font-semibold font-headline text-lg text-foreground">
-                  More
-                </span>
-                <p className="text-sm text-gray-600 dark:text-muted-foreground">
-                  {remainingCategories.length} more categories
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-        )}
+        <Link href="/categories" className="group">
+          <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 h-full bg-white dark:bg-card">
+            <CardContent className="p-6 flex flex-col items-center justify-center gap-3 text-center h-full">
+              <MoreHorizontal className="h-8 w-8 text-primary mb-2" />
+              <span className="font-semibold font-headline text-lg text-foreground">
+                Other Categories
+              </span>
+              <p className="text-sm text-gray-600 dark:text-muted-foreground">
+                View all categories
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
     </div>
   );

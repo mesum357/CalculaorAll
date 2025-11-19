@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthLayout } from '@/components/auth-layout';
+import { AuthProvider } from '@/contexts/auth-context';
 
 export const metadata: Metadata = {
   title: 'Calculator1.org',
@@ -31,10 +32,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthLayout>
-            <main className="flex-grow">{children}</main>
-          </AuthLayout>
-          <Toaster />
+          <AuthProvider>
+            <AuthLayout>
+              <main className="flex-grow">{children}</main>
+            </AuthLayout>
+            <Toaster />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

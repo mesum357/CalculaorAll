@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Delete, Sigma, LineChart, Landmark, BarChart3, FunctionSquare, Triangle, ArrowRightLeft, DollarSign, Binary, Pi, SquareRadical } from 'lucide-react';
+import { Delete, Sigma, LineChart, Landmark, BarChart3, FunctionSquare, Triangle, ArrowRightLeft, DollarSign, Binary, Pi, SquareRadical, Calculator } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScientificCalculator } from '@/components/calculators/scientific-calculator';
@@ -15,6 +15,9 @@ import { GeometryCalculator } from '@/components/calculators/geometry-calculator
 import { UnitConverter } from '@/components/calculators/unit-converter';
 import { CurrencyConverter } from '@/components/calculators/currency-converter';
 import { ProgrammingCalculator } from '@/components/calculators/programming-calculator';
+import { api, type Calculator as CalculatorType } from '@/lib/api';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 const CalculatorButton = ({
   value,
@@ -42,26 +45,71 @@ const CalculatorButton = ({
   </button>
 );
 
-const calculatorCategories: { name: string; icon: LucideIcon; id: string }[] = [
-    { name: 'Scientific', icon: Sigma, id: 'scientific' },
-    { name: 'Graphing', icon: LineChart, id: 'graphing' },
-    { name: 'Financial', icon: Landmark, id: 'financial' },
-    { name: 'Statistics', icon: BarChart3, id: 'statistics' },
-    { name: 'Algebra', icon: FunctionSquare, id: 'algebra' },
-    { name: 'Geometry', icon: Triangle, id: 'geometry' },
-    { name: 'Unit Converter', icon: ArrowRightLeft, id: 'unit-converter' },
-    { name: 'Currency', icon: DollarSign, id: 'currency' },
-    { name: 'Programming', icon: Binary, id: 'programming' },
-]
+// Icon mapping for categories
+const getCategoryIcon = (categoryName: string): LucideIcon => {
+  const name = categoryName.toLowerCase();
+  if (name.includes('math') || name.includes('scientific')) return Sigma;
+  if (name.includes('finance') || name.includes('financial')) return Landmark;
+  if (name.includes('statistics') || name.includes('stat')) return BarChart3;
+  if (name.includes('algebra')) return FunctionSquare;
+  if (name.includes('geometry')) return Triangle;
+  if (name.includes('converter') || name.includes('conversion')) return ArrowRightLeft;
+  if (name.includes('currency') || name.includes('money')) return DollarSign;
+  if (name.includes('programming') || name.includes('code')) return Binary;
+  if (name.includes('graph')) return LineChart;
+  return Calculator; // Default icon
+};
+
+interface CalculatorInput {
+  key: string;
+  label: string;
+  type: string;
+  placeholder?: string;
+  defaultValue?: string | number;
+  min?: number;
+  max?: number;
+  required?: boolean;
+}
+
+interface CalculatorResult {
+  key: string;
+  label: string;
+  formula?: string;
+  unit?: string;
+  format: string;
+}
 
 export function AdvancedCalculator() {
   const [expression, setExpression] = useState('');
   const [display, setDisplay] = useState('0');
   const [currentCalculator, setCurrentCalculator] = useState<string>('basic');
+  const [featuredCalculators, setFeaturedCalculators] = useState<CalculatorType[]>([]);
+  const [loadingCalculators, setLoadingCalculators] = useState(true);
+  const [selectedCalculator, setSelectedCalculator] = useState<CalculatorType | null>(null);
+  const [calculatorInputs, setCalculatorInputs] = useState<Record<string, string>>({});
+  const [calculatorResults, setCalculatorResults] = useState<Record<string, number | string>>({});
 
   useEffect(() => {
     // This is to avoid hydration mismatch
     console.log('[AdvancedCalculator] Component mounted');
+  }, []);
+
+  // Fetch featured (most used) calculators
+  useEffect(() => {
+    const fetchFeaturedCalculators = async () => {
+      try {
+        setLoadingCalculators(true);
+        const data = await api.calculators.getAll({ most_used: true, is_active: true });
+        setFeaturedCalculators(data.slice(0, 9)); // Limit to 9 calculators for quick access
+      } catch (error) {
+        console.error('Error fetching featured calculators:', error);
+        setFeaturedCalculators([]);
+      } finally {
+        setLoadingCalculators(false);
+      }
+    };
+
+    fetchFeaturedCalculators();
   }, []);
 
     const factorial = (n: number): number => {
@@ -197,7 +245,190 @@ export function AdvancedCalculator() {
   ];
 
 
+  // Calculate results for dynamic calculator
+  const calculateDynamicResults = () => {
+    if (!selectedCalculator) return;
+    
+    const inputs = Array.isArray(selectedCalculator.inputs) 
+      ? selectedCalculator.inputs 
+      : (selectedCalculator.inputs ? JSON.parse(selectedCalculator.inputs) : []);
+    const results = Array.isArray(selectedCalculator.results) 
+      ? selectedCalculator.results 
+      : (selectedCalculator.results ? JSON.parse(selectedCalculator.results) : []);
+    
+    const calculatedResults: Record<string, number | string> = {};
+    
+    // Convert input values to numbers for formula evaluation
+    const inputValues: Record<string, number> = {};
+    let hasError = false;
+    
+    for (const input of inputs) {
+      const value = parseFloat(calculatorInputs[input.key] || '0');
+      if (isNaN(value) && input.required) {
+        hasError = true;
+        break;
+      }
+      inputValues[input.key] = value;
+    }
+    
+    if (hasError) {
+      setCalculatorResults({});
+      return;
+    }
+    
+    // Evaluate each result formula
+    for (const result of results) {
+      if (result.formula) {
+        try {
+          // Replace input keys with their values in the formula
+          let formula = result.formula;
+          Object.keys(inputValues).forEach(key => {
+            const regex = new RegExp(`\\b${key}\\b`, 'g');
+            formula = formula.replace(regex, inputValues[key].toString());
+          });
+          
+          // Evaluate the formula (using eval like the basic calculator)
+          // eslint-disable-next-line no-eval
+          const value = eval(formula);
+          
+          // Format the result
+          let formattedValue: string;
+          if (result.format === 'currency') {
+            formattedValue = new Intl.NumberFormat('en-US', {
+              style: 'currency',
+              currency: 'USD',
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            }).format(value);
+          } else if (result.format === 'percent') {
+            formattedValue = `${value.toFixed(2)}%`;
+          } else if (result.format === 'integer') {
+            formattedValue = Math.round(value).toString();
+          } else {
+            formattedValue = value.toFixed(2);
+          }
+          
+          if (result.unit && result.format !== 'currency' && result.format !== 'percent') {
+            formattedValue += ` ${result.unit}`;
+          }
+          
+          calculatedResults[result.key] = formattedValue;
+        } catch (error) {
+          calculatedResults[result.key] = 'Error';
+        }
+      }
+    }
+    
+    setCalculatorResults(calculatedResults);
+  };
+
+  // Recalculate when inputs change
+  useEffect(() => {
+    if (currentCalculator === 'dynamic' && selectedCalculator) {
+      calculateDynamicResults();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [calculatorInputs, currentCalculator, selectedCalculator]);
+
+  // Handle loading a calculator from quick access
+  const handleLoadCalculator = (calc: CalculatorType) => {
+    setSelectedCalculator(calc);
+    setCurrentCalculator('dynamic');
+    
+    // Initialize input values
+    const inputs = Array.isArray(calc.inputs) ? calc.inputs : (calc.inputs ? JSON.parse(calc.inputs) : []);
+    const initialInputs: Record<string, string> = {};
+    inputs.forEach((input: CalculatorInput) => {
+      initialInputs[input.key] = input.defaultValue?.toString() || '';
+    });
+    setCalculatorInputs(initialInputs);
+    setCalculatorResults({});
+  };
+
+  // Handle input change for dynamic calculator
+  const handleDynamicInputChange = (key: string, value: string) => {
+    setCalculatorInputs(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  // Render dynamic calculator
+  const renderDynamicCalculator = () => {
+    if (!selectedCalculator) return null;
+    
+    const inputs = Array.isArray(selectedCalculator.inputs) 
+      ? selectedCalculator.inputs 
+      : (selectedCalculator.inputs ? JSON.parse(selectedCalculator.inputs) : []);
+    const results = Array.isArray(selectedCalculator.results) 
+      ? selectedCalculator.results 
+      : (selectedCalculator.results ? JSON.parse(selectedCalculator.results) : []);
+    
+    return (
+      <div className="p-4 space-y-4">
+        <div className="flex justify-between items-center mb-2">
+          <h2 className="text-xl font-bold">{selectedCalculator.name}</h2>
+          <Button variant="link" onClick={() => {
+            setCurrentCalculator('basic');
+            setSelectedCalculator(null);
+            setCalculatorInputs({});
+            setCalculatorResults({});
+          }} className="text-sm">
+            Back to Basic
+          </Button>
+        </div>
+        
+        {selectedCalculator.description && (
+          <p className="text-sm text-muted-foreground mb-4">{selectedCalculator.description}</p>
+        )}
+        
+        <div className="space-y-3">
+          <Label className="text-sm font-semibold">Inputs</Label>
+          {inputs.map((input: CalculatorInput) => (
+            <div key={input.key} className="space-y-1">
+              <Label htmlFor={input.key} className="text-xs">
+                {input.label}
+                {input.required && <span className="text-red-500 ml-1">*</span>}
+              </Label>
+              <Input
+                id={input.key}
+                type={input.type === 'percent' ? 'number' : input.type}
+                placeholder={input.placeholder || input.label}
+                value={calculatorInputs[input.key] || ''}
+                onChange={(e) => handleDynamicInputChange(input.key, e.target.value)}
+                min={input.min}
+                max={input.max}
+                step={input.type === 'integer' ? '1' : 'any'}
+                className="w-full"
+              />
+            </div>
+          ))}
+        </div>
+        
+        {Object.keys(calculatorResults).length > 0 && (
+          <div className="mt-6 space-y-3 pt-4 border-t">
+            <Label className="text-sm font-semibold">Results</Label>
+            {results.map((result: CalculatorResult) => (
+              calculatorResults[result.key] && (
+                <div key={result.key} className="bg-muted p-3 rounded-lg">
+                  <Label className="text-xs text-muted-foreground">{result.label}</Label>
+                  <p className="text-2xl font-bold text-primary mt-1">
+                    {calculatorResults[result.key]}
+                  </p>
+                </div>
+              )
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderCalculator = () => {
+    if (currentCalculator === 'dynamic') {
+      return renderDynamicCalculator();
+    }
+    
     switch (currentCalculator) {
       case 'scientific':
         return <ScientificCalculator />;
@@ -248,42 +479,73 @@ export function AdvancedCalculator() {
   };
 
   const getCalculatorTitle = () => {
-    const category = calculatorCategories.find(cat => cat.id === currentCalculator);
-    return category ? category.name : 'Basic Calculator';
+    if (currentCalculator === 'dynamic' && selectedCalculator) {
+      return selectedCalculator.name;
+    }
+    // For the old calculator types, keep the same logic
+    const oldTypes: Record<string, string> = {
+      'scientific': 'Scientific',
+      'graphing': 'Graphing',
+      'financial': 'Financial',
+      'statistics': 'Statistics',
+      'algebra': 'Algebra',
+      'geometry': 'Geometry',
+      'unit-converter': 'Unit Converter',
+      'currency': 'Currency',
+      'programming': 'Programming',
+    };
+    return oldTypes[currentCalculator] || 'Basic Calculator';
   };
   
   return (
     <Card className="w-full max-w-md mx-auto shadow-2xl overflow-hidden bg-card/80 backdrop-blur-sm border-white/20">
       <CardContent className="p-2">
-        {currentCalculator !== 'basic' && (
-          <div className="mb-4 flex justify-between items-center">
-            <h2 className="text-xl font-bold">{getCalculatorTitle()}</h2>
-            <Button variant="link" onClick={() => setCurrentCalculator('basic')} className="text-sm">
-              Back to Basic
-            </Button>
+        {renderCalculator()}
+        {featuredCalculators.length > 0 && (
+          <div className="mt-4 p-2 bg-background/50 rounded-lg">
+            <h3 className="text-xs font-semibold text-muted-foreground mb-2 px-1">Most Used</h3>
+            <div className="grid grid-cols-3 gap-2">
+              {loadingCalculators ? (
+                // Loading skeleton
+                Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="flex flex-col items-center justify-center p-2 rounded-lg bg-muted/50 animate-pulse"
+                  >
+                    <div className="h-5 w-5 rounded bg-muted mb-1" />
+                    <div className="h-3 w-full rounded bg-muted" />
+                  </div>
+                ))
+              ) : (
+                featuredCalculators.map((calc) => {
+                  const Icon = getCategoryIcon(calc.category_name);
+                  return (
+                    <button
+                      key={calc.id}
+                      onClick={() => handleLoadCalculator(calc)}
+                      className={cn(
+                        "cursor-pointer flex flex-col items-center justify-center p-2 rounded-lg hover:bg-accent/80 text-center transition-colors h-full group",
+                        selectedCalculator?.id === calc.id && "bg-accent"
+                      )}
+                      title={calc.name}
+                    >
+                      <Icon className={cn(
+                        "h-5 w-5 mb-1 text-primary group-hover:scale-110 transition-all",
+                        "group-hover:text-white",
+                        selectedCalculator?.id === calc.id && "text-white"
+                      )}/>
+                      <span className={cn(
+                        "text-xs font-medium line-clamp-2 text-foreground",
+                        "group-hover:text-white",
+                        selectedCalculator?.id === calc.id && "text-white"
+                      )}>{calc.name}</span>
+                    </button>
+                  );
+                })
+              )}
+            </div>
           </div>
         )}
-        {renderCalculator()}
-        <div className="mt-4 p-2 bg-background/50 rounded-lg">
-          <div className="grid grid-cols-3 gap-2">
-            {calculatorCategories.map((cat) => (
-              <button
-                key={cat.name}
-                onClick={() => {
-                  console.log('[AdvancedCalculator] Calculator clicked:', cat.name, 'id:', cat.id);
-                  setCurrentCalculator(cat.id);
-                }}
-                className={cn(
-                  "cursor-pointer flex flex-col items-center justify-center p-2 rounded-lg hover:bg-accent/50 text-center transition-colors h-full",
-                  currentCalculator === cat.id && "bg-accent"
-                )}
-              >
-                <cat.icon className="h-5 w-5 mb-1 text-primary"/>
-                <span className="text-xs font-medium">{cat.name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
       </CardContent>
     </Card>
   );

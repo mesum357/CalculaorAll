@@ -8,23 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CategoryNavigation } from '@/components/category-navigation';
 import { FeaturedCalculators } from '@/components/featured-calculators';
+import { PopularCalculators } from '@/components/popular-calculators';
 import { AdvancedCalculator } from '@/components/advanced-calculator';
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-const AppleIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    viewBox="0 0 384 512"
-    fill="currentColor"
-    height="1em"
-    width="1em"
-    {...props}
-  >
-    <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C39.2 141.1 0 183.2 0 241.2c0 70.7 59.4 124.3 123.7 124.3 25.2 0 49-17.5 64.9-17.5 16.5 0 40.7 17.5 68.1 17.5 24.3 0 57.6-10.9 78.4-31.5-22.1-17.5-40.7-49-40.7-82.3zM250.2 92.5C275.9 67.8 293.5 39.2 293.5 0 231.8 1.1 176.2 32.7 150.8 58.3c-27.1 27.1-51.4 69.4-51.4 117.3 64.9-1.1 112.5-49.4 112.5-83.1z" />
-  </svg>
-);
-
-const AndroidIcon = (props: React.SVGProps<SVGSVGElement>) => (
+const AppStoreIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     viewBox="0 0 24 24"
     fill="currentColor"
@@ -32,7 +21,19 @@ const AndroidIcon = (props: React.SVGProps<SVGSVGElement>) => (
     width="1em"
     {...props}
   >
-    <path d="M17.32 5H6.68a.33.33 0 00-.32.32.33.33 0 00.32.32h10.64a.33.33 0 00.32-.32.33.33 0 00-.32-.32zm-2.45-1.92L14.12 2a.32.32 0 00-.45 0l-.75 1.08a9.46 9.46 0 00-4.14 0L7.02 2a.32.32 0 00-.45 0l-.75 1.08A7.77 7.77 0 003 8.76v8.48a3.36 3.36 0 003.34 3.34h11.32A3.36 3.36 0 0021 17.24V8.76a7.77 7.77 0 00-2.87-5.68zM7.85 17.3a.85.85 0 11.85-.85.85.85 0 01-.85.85zm8.3 0a.85.85 0 11.85-.85.85.85 0 01-.85.85zM18 13H6a.32.32 0 01-.32-.32c0-.18.14-.32.32-.32h12a.32.32 0 01.32.32c0 .18-.14.32-.32.32z" />
+    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+  </svg>
+);
+
+const PlayStoreIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    height="1em"
+    width="1em"
+    {...props}
+  >
+    <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/>
   </svg>
 );
 
@@ -70,7 +71,7 @@ export default function Home() {
                   asChild
                 >
                   <Link href="/get-app">
-                    <AppleIcon className="w-6 h-6 mr-2" />
+                    <AppStoreIcon className="w-8 h-8 mr-2" />
                     App Store
                   </Link>
                 </Button>
@@ -81,7 +82,7 @@ export default function Home() {
                   asChild
                 >
                   <Link href="/get-app">
-                    <AndroidIcon className="w-6 h-6 mr-2" />
+                    <PlayStoreIcon className="w-8 h-8 mr-2" />
                     Google Play
                   </Link>
                 </Button>
@@ -101,10 +102,17 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured & Popular Calculators Section */}
+      {/* Featured Calculators Section */}
       <section className="w-full py-16 md:py-24 bg-white dark:bg-card">
         <div className="container px-4 md:px-6">
           <FeaturedCalculators />
+        </div>
+      </section>
+
+      {/* Popular Calculators Section */}
+      <section className="w-full py-16 md:py-24 bg-background">
+        <div className="container px-4 md:px-6">
+          <PopularCalculators />
         </div>
       </section>
     </div>
