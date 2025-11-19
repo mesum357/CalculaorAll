@@ -106,21 +106,22 @@ export const api = {
     getAll: async () => {
       const url = `${API_BASE_URL}/categories`;
       
-      console.log('[API] Fetching categories:', {
+      console.log('[API] Fetching categories:', JSON.stringify({
         url,
         timestamp: new Date().toISOString()
-      });
+      }, null, 2));
       
       try {
         const response = await fetch(url, { credentials: 'include' });
         
-        console.log('[API] Categories response:', {
+        const responseHeaders = Object.fromEntries(response.headers.entries());
+        console.log('[API] Categories response:', JSON.stringify({
           url,
           status: response.status,
           statusText: response.statusText,
           ok: response.ok,
-          headers: Object.fromEntries(response.headers.entries())
-        });
+          headers: responseHeaders
+        }, null, 2));
         
         if (!response.ok) {
           const errorText = await response.text();
@@ -134,11 +135,12 @@ export const api = {
         }
         
         const data = await response.json();
-        console.log('[API] Categories success:', {
+        const successData = {
           url,
           count: Array.isArray(data) ? data.length : 'not an array',
-          data: Array.isArray(data) ? data.slice(0, 3).map(c => ({ id: c.id, name: c.name, slug: c.slug })) : data
-        });
+          sample: Array.isArray(data) && data.length > 0 ? data.slice(0, 3).map(c => ({ id: c.id, name: c.name, slug: c.slug })) : 'no data'
+        };
+        console.log('[API] Categories success:', JSON.stringify(successData, null, 2));
         
         return data;
       } catch (error) {
@@ -233,17 +235,60 @@ export const api = {
       return response.json();
     },
     login: async (email: string, password: string) => {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-        credentials: 'include',
+      const url = `${API_BASE_URL}/auth/login`;
+      
+      console.log('[API] Login request:', {
+        url,
+        email,
+        hasPassword: !!password,
+        timestamp: new Date().toISOString()
       });
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to login');
+      
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+          credentials: 'include',
+        });
+        
+        console.log('[API] Login response:', {
+          url,
+          status: response.status,
+          statusText: response.statusText,
+          ok: response.ok,
+          headers: Object.fromEntries(response.headers.entries())
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          console.error('[API] Login error response:', {
+            url,
+            status: response.status,
+            error: error.error,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+          });
+          throw new Error(error.details || error.error || 'Failed to login');
+        }
+        
+        const data = await response.json();
+        console.log('[API] Login success:', {
+          url,
+          user: data.user,
+          message: data.message
+        });
+        
+        return data;
+      } catch (error) {
+        console.error('[API] Login fetch error:', {
+          url,
+          error: error instanceof Error ? error.message : error,
+          stack: error instanceof Error ? error.stack : undefined
+        });
+        throw error;
       }
-      return response.json();
     },
     logout: async () => {
       const response = await fetch(`${API_BASE_URL}/auth/logout`, {
