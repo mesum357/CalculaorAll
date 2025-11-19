@@ -1,5 +1,12 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
+// Debug: Log API configuration on module load
+if (typeof window !== 'undefined') {
+  console.log('[API Config] API_BASE_URL:', API_BASE_URL);
+  console.log('[API Config] NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
+  console.log('[API Config] NODE_ENV:', process.env.NODE_ENV);
+}
+
 export interface Calculator {
   id: number;
   name: string;
@@ -31,9 +38,51 @@ export const api = {
       if (params?.popular !== undefined) queryParams.append('popular', params.popular.toString());
       
       const url = queryParams.toString() ? `${API_BASE_URL}/calculators?${queryParams.toString()}` : `${API_BASE_URL}/calculators`;
-      const response = await fetch(url, { credentials: 'include' });
-      if (!response.ok) throw new Error('Failed to fetch calculators');
-      return response.json();
+      
+      console.log('[API] Fetching calculators:', {
+        url,
+        params,
+        timestamp: new Date().toISOString()
+      });
+      
+      try {
+        const response = await fetch(url, { credentials: 'include' });
+        
+        console.log('[API] Calculators response:', {
+          url,
+          status: response.status,
+          statusText: response.statusText,
+          ok: response.ok,
+          headers: Object.fromEntries(response.headers.entries())
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('[API] Calculators error response:', {
+            url,
+            status: response.status,
+            statusText: response.statusText,
+            body: errorText
+          });
+          throw new Error(`Failed to fetch calculators: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('[API] Calculators success:', {
+          url,
+          count: Array.isArray(data) ? data.length : 'not an array',
+          data: Array.isArray(data) ? data.slice(0, 3).map(c => ({ id: c.id, name: c.name })) : data
+        });
+        
+        return data;
+      } catch (error) {
+        console.error('[API] Calculators fetch error:', {
+          url,
+          error: error instanceof Error ? error.message : error,
+          stack: error instanceof Error ? error.stack : undefined
+        });
+        throw error;
+      }
     },
     getById: async (id: number): Promise<Calculator> => {
       const response = await fetch(`${API_BASE_URL}/calculators/${id}`);
@@ -55,9 +104,52 @@ export const api = {
   },
   categories: {
     getAll: async () => {
-      const response = await fetch(`${API_BASE_URL}/categories`);
-      if (!response.ok) throw new Error('Failed to fetch categories');
-      return response.json();
+      const url = `${API_BASE_URL}/categories`;
+      
+      console.log('[API] Fetching categories:', {
+        url,
+        timestamp: new Date().toISOString()
+      });
+      
+      try {
+        const response = await fetch(url, { credentials: 'include' });
+        
+        console.log('[API] Categories response:', {
+          url,
+          status: response.status,
+          statusText: response.statusText,
+          ok: response.ok,
+          headers: Object.fromEntries(response.headers.entries())
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('[API] Categories error response:', {
+            url,
+            status: response.status,
+            statusText: response.statusText,
+            body: errorText
+          });
+          throw new Error(`Failed to fetch categories: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('[API] Categories success:', {
+          url,
+          count: Array.isArray(data) ? data.length : 'not an array',
+          data: Array.isArray(data) ? data.slice(0, 3).map(c => ({ id: c.id, name: c.name, slug: c.slug })) : data
+        });
+        
+        return data;
+      } catch (error) {
+        console.error('[API] Categories fetch error:', {
+          url,
+          error: error instanceof Error ? error.message : error,
+          stack: error instanceof Error ? error.stack : undefined,
+          cause: error instanceof Error && 'cause' in error ? error.cause : undefined
+        });
+        throw error;
+      }
     },
   },
   subcategories: {

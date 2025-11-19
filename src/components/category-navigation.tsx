@@ -11,14 +11,30 @@ export function CategoryNavigation() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('[CategoryNavigation] Component mounted, fetching categories...');
+    
     async function fetchCategories() {
       try {
+        console.log('[CategoryNavigation] Starting getMainCategories...');
         const categories = await getMainCategories();
+        
+        console.log('[CategoryNavigation] Categories fetched:', {
+          count: Array.isArray(categories) ? categories.length : 'not an array',
+          categories: Array.isArray(categories) ? categories.map(c => ({ name: c.name, slug: c.slug, count: c.count })) : categories
+        });
+        
         setMainCategories(categories);
       } catch (error) {
-        console.error('Error fetching categories:', error);
+        console.error('[CategoryNavigation] Error fetching categories:', {
+          error: error instanceof Error ? error.message : error,
+          stack: error instanceof Error ? error.stack : undefined,
+          errorType: error?.constructor?.name,
+          fullError: error
+        });
+        setMainCategories([]);
       } finally {
         setLoading(false);
+        console.log('[CategoryNavigation] Fetch completed, loading set to false');
       }
     }
     fetchCategories();

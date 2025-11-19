@@ -13,16 +13,39 @@ export function PopularCalculators() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('[PopularCalculators] Component mounted, fetching popular calculators...');
+    
     const fetchPopular = async () => {
       try {
         setLoading(true);
+        console.log('[PopularCalculators] Starting fetch with params:', { popular: true, is_active: true });
+        
         const data = await api.calculators.getAll({ popular: true, is_active: true });
-        setCalculators(data.slice(0, 12)); // Limit to 12 calculators
+        
+        console.log('[PopularCalculators] Fetch successful:', {
+          totalReceived: Array.isArray(data) ? data.length : 'not an array',
+          dataType: typeof data,
+          sampleData: Array.isArray(data) && data.length > 0 ? data[0] : 'no data'
+        });
+        
+        const limitedData = Array.isArray(data) ? data.slice(0, 12) : [];
+        setCalculators(limitedData);
+        
+        console.log('[PopularCalculators] Setting calculators:', {
+          count: limitedData.length,
+          names: limitedData.map(c => c.name)
+        });
       } catch (error) {
-        console.error('Error fetching popular calculators:', error);
+        console.error('[PopularCalculators] Error fetching popular calculators:', {
+          error: error instanceof Error ? error.message : error,
+          stack: error instanceof Error ? error.stack : undefined,
+          errorType: error?.constructor?.name,
+          fullError: error
+        });
         setCalculators([]);
       } finally {
         setLoading(false);
+        console.log('[PopularCalculators] Fetch completed, loading set to false');
       }
     };
 
