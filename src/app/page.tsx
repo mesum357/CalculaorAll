@@ -7,7 +7,6 @@ import { ArrowRight, Search, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CategoryNavigation } from '@/components/category-navigation';
-import { FeaturedCalculators } from '@/components/featured-calculators';
 import { PopularCalculators } from '@/components/popular-calculators';
 import { AdvancedCalculator } from '@/components/advanced-calculator';
 import { FormEvent, useState } from 'react';
@@ -99,13 +98,6 @@ export default function Home() {
       <section id="categories" className="w-full py-16 md:py-24 bg-background">
         <div className="container px-4 md:px-6">
           <CategoryNavigation />
-        </div>
-      </section>
-
-      {/* Featured Calculators Section */}
-      <section className="w-full py-16 md:py-24 bg-white dark:bg-card">
-        <div className="container px-4 md:px-6">
-          <FeaturedCalculators />
         </div>
       </section>
 

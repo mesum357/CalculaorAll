@@ -58,6 +58,8 @@ export function Header() {
     }
   }, [categories, pathname]);
 
+  // Check if we're on the homepage
+  const isHomePage = pathname === "/";
 
   return (
     <header
@@ -108,38 +110,40 @@ export function Header() {
           )}
         </div>
       </div>
-      <nav className="border-t">
-        <div className="container px-4 md:px-6">
-            <Carousel
-              opts={{
-                align: "start",
-                dragFree: true,
-              }}
-              className="w-full"
-            >
-              <CarouselContent>
-                {categories.map((category) => (
-                  <CarouselItem key={category.id} className="basis-auto">
-                    <Link href={category.href}>
-                      <div className={cn(
-                          "py-3 px-4 text-sm font-medium transition-colors relative border-b-2", 
-                          activeCategory === category.slug 
-                            ? "text-primary border-primary" 
-                            : "text-gray-700 dark:text-muted-foreground hover:text-foreground border-transparent"
-                        )}>
-                        {category.name}
-                      </div>
-                    </Link>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <div className="hidden md:block">
-                  <CarouselPrevious className="absolute -left-4 top-1/2 -translate-y-1/2" />
-                  <CarouselNext className="absolute -right-4 top-1/2 -translate-y-1/2" />
-              </div>
-            </Carousel>
-        </div>
-      </nav>
+      {!isHomePage && (
+        <nav className="border-t">
+          <div className="container px-4 md:px-6">
+              <Carousel
+                opts={{
+                  align: "start",
+                  dragFree: true,
+                }}
+                className="w-full"
+              >
+                <CarouselContent>
+                  {categories.map((category) => (
+                    <CarouselItem key={category.id} className="basis-auto">
+                      <Link href={category.href}>
+                        <div className={cn(
+                            "py-3 px-4 text-sm font-medium transition-colors relative border-b-2", 
+                            activeCategory === category.slug 
+                              ? "text-primary border-primary" 
+                              : "text-gray-700 dark:text-muted-foreground hover:text-foreground border-transparent"
+                          )}>
+                          {category.name}
+                        </div>
+                      </Link>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <div className="hidden md:block">
+                    <CarouselPrevious className="absolute -left-4 top-1/2 -translate-y-1/2" />
+                    <CarouselNext className="absolute -right-4 top-1/2 -translate-y-1/2" />
+                </div>
+              </Carousel>
+          </div>
+        </nav>
+      )}
     </header>
   );
 }
