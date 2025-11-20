@@ -3,19 +3,23 @@
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { getMainCategories, type Category } from '@/lib/categories';
+import { DefaultCategoryCards } from './default-category-cards';
 import { useEffect, useState } from 'react';
 
 export function CategoryCards() {
   const [mainCategories, setMainCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     async function fetchCategories() {
       try {
         const categories = await getMainCategories();
         setMainCategories(categories);
+        setError(false);
       } catch (error) {
         console.error('[CategoryCards] Error fetching categories:', error);
+        setError(true);
         setMainCategories([]);
       } finally {
         setLoading(false);
@@ -24,6 +28,7 @@ export function CategoryCards() {
     fetchCategories();
   }, []);
 
+  // If loading, show skeleton
   if (loading) {
     return (
       <div className="w-full py-16 md:py-24">
@@ -41,10 +46,12 @@ export function CategoryCards() {
     );
   }
 
-  if (mainCategories.length === 0) {
-    return null;
+  // If error or no categories, show default categories
+  if (error || mainCategories.length === 0) {
+    return <DefaultCategoryCards />;
   }
 
+  // Show fetched categories if available
   return (
     <div className="w-full py-16 md:py-24 bg-gradient-to-b from-background to-muted/20">
       <div className="container px-4 md:px-6">
