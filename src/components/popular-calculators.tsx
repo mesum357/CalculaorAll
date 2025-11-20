@@ -114,16 +114,7 @@ export function PopularCalculators() {
                     </CardTitle>
                   </div>
                   <CardDescription className="text-sm leading-relaxed text-muted-foreground">
-                    {calc.subtitle ? (
-                      <>
-                        <div className="font-medium mb-1">{calc.subtitle}</div>
-                        {calc.description && (
-                          <div className="text-xs opacity-80">{calc.description}</div>
-                        )}
-                      </>
-                    ) : (
-                      calc.description || 'No description available.'
-                    )}
+                    {calc.subtitle || calc.description || 'No description available.'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0 mt-auto">

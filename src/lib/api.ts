@@ -12,6 +12,7 @@ export interface Calculator {
   name: string;
   slug: string;
   description?: string;
+  subtitle?: string;
   category_id: number;
   subcategory_id: number;
   category_name: string;
