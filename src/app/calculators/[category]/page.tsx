@@ -4,23 +4,76 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowRight } from 'lucide-react';
 
-export default async function CategoryPage({ params }: { params: { category: string } }) {
+export default async function CategoryPage({ params }: { params: Promise<{ category: string }> | { category: string } }) {
     try {
+        // Handle both sync and async params (Next.js 14+ compatibility)
+        const resolvedParams = await Promise.resolve(params);
+        
+        console.log('[CategoryPage] ========== PAGE LOAD STARTED ==========');
+        console.log('[CategoryPage] Received params:', {
+            category: resolvedParams.category,
+            categoryType: typeof resolvedParams.category,
+            categoryLength: resolvedParams.category?.length,
+            allParams: resolvedParams,
+            isPromise: params instanceof Promise
+        });
+        
         const allCategories = await getCategories();
-        const category = allCategories.find(c => c.slug === params.category);
-
+        console.log('[CategoryPage] Categories fetched from getCategories():', {
+            count: allCategories.length,
+            slugs: allCategories.map(c => c.slug),
+            categories: allCategories.map(c => ({ id: c.id, name: c.name, slug: c.slug }))
+        });
+        
+        console.log('[CategoryPage] Searching for category with slug:', resolvedParams.category);
+        console.log('[CategoryPage] Available slugs:', allCategories.map(c => ({
+            slug: c.slug,
+            matches: c.slug === resolvedParams.category,
+            lowercaseMatches: c.slug.toLowerCase() === resolvedParams.category?.toLowerCase()
+        })));
+        
+        const category = allCategories.find(c => c.slug === resolvedParams.category);
+        
         if (!category) {
+            // Try case-insensitive match
+            const categoryLower = allCategories.find(c => c.slug.toLowerCase() === resolvedParams.category?.toLowerCase());
+            
+            console.error('[CategoryPage] ========== CATEGORY NOT FOUND ==========');
+            console.error('[CategoryPage] Search params:', {
+                searchedSlug: resolvedParams.category,
+                searchedSlugLower: resolvedParams.category?.toLowerCase(),
+                availableSlugs: allCategories.map(c => c.slug),
+                availableSlugsLower: allCategories.map(c => c.slug.toLowerCase()),
+                caseInsensitiveMatch: categoryLower ? categoryLower.slug : null
+            });
+            
             return (
                 <div className="container py-12">
-                    <h1 className="text-3xl font-bold">Category not found</h1>
+                    <h1 className="text-3xl font-bold mb-4">Category not found</h1>
+                    <div className="space-y-2 text-muted-foreground">
+                        <p>The category "{resolvedParams.category}" was not found.</p>
+                        <p className="text-sm">Available categories:</p>
+                        <ul className="list-disc list-inside text-sm">
+                            {allCategories.map(cat => (
+                                <li key={cat.id}>
+                                    <Link href={`/calculators/${cat.slug}`} className="text-primary hover:underline">
+                                        {cat.name} ({cat.slug})
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
                 </div>
             );
         }
 
-        console.log('[CategoryPage] Fetching data for category:', {
+        console.log('[CategoryPage] ========== CATEGORY FOUND ==========');
+        console.log('[CategoryPage] Category details:', {
             categoryId: category.id,
             categoryName: category.name,
-            categorySlug: category.slug
+            categorySlug: category.slug,
+            categoryHref: category.href,
+            categoryCount: category.count
         });
 
         // Fetch calculators and subcategories in parallel
@@ -163,13 +216,28 @@ export default async function CategoryPage({ params }: { params: { category: str
             </div>
         );
     } catch (error) {
-        console.error('[CategoryPage] Error:', error);
+        console.error('[CategoryPage] ========== ERROR OCCURRED ==========');
+        console.error('[CategoryPage] Error type:', error?.constructor?.name);
+        console.error('[CategoryPage] Error message:', error instanceof Error ? error.message : error);
+        console.error('[CategoryPage] Error stack:', error instanceof Error ? error.stack : undefined);
+        console.error('[CategoryPage] Full error object:', error);
+        console.error('[CategoryPage] Params at error time:', resolvedParams);
+        
         return (
             <div className="container py-12">
                 <h1 className="text-3xl font-bold mb-4">Error loading category</h1>
-                <p className="text-muted-foreground">
-                    {error instanceof Error ? error.message : 'An unexpected error occurred'}
-                </p>
+                <div className="space-y-2 text-muted-foreground">
+                    <p className="font-semibold">Error details:</p>
+                    <p>{error instanceof Error ? error.message : 'An unexpected error occurred'}</p>
+                    {error instanceof Error && error.stack && (
+                        <details className="mt-4">
+                            <summary className="cursor-pointer text-sm">Technical details</summary>
+                            <pre className="mt-2 text-xs bg-muted p-2 rounded overflow-auto">
+                                {error.stack}
+                            </pre>
+                        </details>
+                    )}
+                </div>
             </div>
         );
     }
