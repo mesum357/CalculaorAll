@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { getOtherCategories } from '@/lib/categories';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+// good
 
 export default async function AllCategoriesPage() {
   // Show only the categories not in the main browse section
