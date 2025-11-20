@@ -88,6 +88,7 @@ export function AdvancedCalculator() {
   const [selectedCalculator, setSelectedCalculator] = useState<CalculatorType | null>(null);
   const [calculatorInputs, setCalculatorInputs] = useState<Record<string, string>>({});
   const [calculatorResults, setCalculatorResults] = useState<Record<string, number | string>>({});
+  const [showAllCalculators, setShowAllCalculators] = useState(false);
 
   useEffect(() => {
     // This is to avoid hydration mismatch
@@ -100,7 +101,7 @@ export function AdvancedCalculator() {
       try {
         setLoadingCalculators(true);
         const data = await api.calculators.getAll({ most_used: true, is_active: true });
-        setFeaturedCalculators(data.slice(0, 9)); // Limit to 9 calculators for quick access
+        setFeaturedCalculators(data); // Keep all calculators, we'll show first 8 + more card if needed
       } catch (error) {
         console.error('Error fetching featured calculators:', error);
         setFeaturedCalculators([]);
@@ -368,14 +369,6 @@ export function AdvancedCalculator() {
       <div className="p-4 space-y-4">
         <div className="flex justify-between items-center mb-2">
           <h2 className="text-xl font-bold">{selectedCalculator.name}</h2>
-          <Button variant="link" onClick={() => {
-            setCurrentCalculator('basic');
-            setSelectedCalculator(null);
-            setCalculatorInputs({});
-            setCalculatorResults({});
-          }} className="text-sm">
-            Back to Basic
-          </Button>
         </div>
         
         {selectedCalculator.description && (
@@ -497,55 +490,130 @@ export function AdvancedCalculator() {
     return oldTypes[currentCalculator] || 'Basic Calculator';
   };
   
+  // Determine which calculators to show
+  const calculatorsToShow = showAllCalculators ? featuredCalculators : featuredCalculators.slice(0, 8);
+  const hasMoreCalculators = featuredCalculators.length > 8;
+  const showMoreCard = hasMoreCalculators && !showAllCalculators;
+
+  // Handle basic calculator click
+  const handleBasicCalculatorClick = () => {
+    setCurrentCalculator('basic');
+    setSelectedCalculator(null);
+    setCalculatorInputs({});
+    setCalculatorResults({});
+    setShowAllCalculators(false);
+  };
+
+  // Handle load calculator - also close "more" view
+  const handleLoadCalculatorWithReset = (calc: CalculatorType) => {
+    handleLoadCalculator(calc);
+    setShowAllCalculators(false);
+  };
+
   return (
     <Card className="w-full max-w-md mx-auto shadow-2xl overflow-hidden bg-card/80 backdrop-blur-sm border-white/20">
-      <CardContent className="p-2">
+      <CardContent className="p-2 max-h-[90vh] overflow-y-auto">
         {renderCalculator()}
-        {featuredCalculators.length > 0 && (
-          <div className="mt-4 p-2 bg-background/50 rounded-lg">
-            <h3 className="text-xs font-semibold text-muted-foreground mb-2 px-1">Most Used</h3>
-            <div className="grid grid-cols-3 gap-2">
-              {loadingCalculators ? (
-                // Loading skeleton
-                Array.from({ length: 6 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="flex flex-col items-center justify-center p-2 rounded-lg bg-muted/50 animate-pulse"
-                  >
-                    <div className="h-5 w-5 rounded bg-muted mb-1" />
-                    <div className="h-3 w-full rounded bg-muted" />
-                  </div>
-                ))
-              ) : (
-                featuredCalculators.map((calc) => {
+        <div className="mt-4 p-2 bg-background/50 rounded-lg">
+          <h3 className="text-xs font-semibold text-muted-foreground mb-2 px-1">Most Used</h3>
+          <div className="grid grid-cols-3 gap-2">
+            {loadingCalculators ? (
+              // Loading skeleton
+              Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex flex-col items-center justify-center p-2 rounded-lg bg-muted/50 animate-pulse"
+                >
+                  <div className="h-5 w-5 rounded bg-muted mb-1" />
+                  <div className="h-3 w-full rounded bg-muted" />
+                </div>
+              ))
+            ) : (
+              <>
+                {/* Basic Calculator Card - Always first and active when basic calculator is selected */}
+                <button
+                  onClick={handleBasicCalculatorClick}
+                  className={cn(
+                    "cursor-pointer flex flex-col items-center justify-center p-2 rounded-lg hover:bg-accent/80 text-center transition-colors h-full group",
+                    currentCalculator === 'basic' && !selectedCalculator && "bg-accent"
+                  )}
+                  title="Basic Calculator"
+                >
+                  <Calculator className={cn(
+                    "h-5 w-5 mb-1 text-primary group-hover:scale-110 transition-all",
+                    "group-hover:text-white",
+                    currentCalculator === 'basic' && !selectedCalculator && "text-white"
+                  )}/>
+                  <span className={cn(
+                    "text-xs font-medium line-clamp-2 text-foreground",
+                    "group-hover:text-white",
+                    currentCalculator === 'basic' && !selectedCalculator && "text-white"
+                  )}>Basic</span>
+                </button>
+
+                {/* Featured Calculators */}
+                {calculatorsToShow.map((calc) => {
                   const Icon = getCategoryIcon(calc.category_name);
+                  const isActive = selectedCalculator?.id === calc.id && currentCalculator === 'dynamic';
                   return (
                     <button
                       key={calc.id}
-                      onClick={() => handleLoadCalculator(calc)}
+                      onClick={() => handleLoadCalculatorWithReset(calc)}
                       className={cn(
                         "cursor-pointer flex flex-col items-center justify-center p-2 rounded-lg hover:bg-accent/80 text-center transition-colors h-full group",
-                        selectedCalculator?.id === calc.id && "bg-accent"
+                        isActive && "bg-accent"
                       )}
                       title={calc.name}
                     >
                       <Icon className={cn(
                         "h-5 w-5 mb-1 text-primary group-hover:scale-110 transition-all",
                         "group-hover:text-white",
-                        selectedCalculator?.id === calc.id && "text-white"
+                        isActive && "text-white"
                       )}/>
                       <span className={cn(
                         "text-xs font-medium line-clamp-2 text-foreground",
                         "group-hover:text-white",
-                        selectedCalculator?.id === calc.id && "text-white"
+                        isActive && "text-white"
                       )}>{calc.name}</span>
                     </button>
                   );
-                })
-              )}
-            </div>
+                })}
+
+                {/* More Card - Show if there are more than 8 calculators */}
+                {showMoreCard && (
+                  <button
+                    onClick={() => setShowAllCalculators(true)}
+                    className="cursor-pointer flex flex-col items-center justify-center p-2 rounded-lg hover:bg-accent/80 text-center transition-colors h-full group border-2 border-dashed border-muted-foreground/30 hover:border-primary"
+                    title="Show More Calculators"
+                  >
+                    <div className="h-5 w-5 mb-1 flex items-center justify-center text-muted-foreground group-hover:text-primary">
+                      <span className="text-lg font-bold">+</span>
+                    </div>
+                    <span className="text-xs font-medium line-clamp-2 text-muted-foreground group-hover:text-primary">
+                      More ({featuredCalculators.length - 8})
+                    </span>
+                  </button>
+                )}
+
+                {/* Show Less Button - When showing all calculators */}
+                {showAllCalculators && hasMoreCalculators && (
+                  <button
+                    onClick={() => setShowAllCalculators(false)}
+                    className="cursor-pointer flex flex-col items-center justify-center p-2 rounded-lg hover:bg-accent/80 text-center transition-colors h-full group border-2 border-dashed border-muted-foreground/30 hover:border-primary"
+                    title="Show Less"
+                  >
+                    <div className="h-5 w-5 mb-1 flex items-center justify-center text-muted-foreground group-hover:text-primary">
+                      <span className="text-lg font-bold">−</span>
+                    </div>
+                    <span className="text-xs font-medium line-clamp-2 text-muted-foreground group-hover:text-primary">
+                      Show Less
+                    </span>
+                  </button>
+                )}
+              </>
+            )}
           </div>
-        )}
+        </div>
       </CardContent>
     </Card>
   );
