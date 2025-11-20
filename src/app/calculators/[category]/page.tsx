@@ -3,6 +3,7 @@ import { api } from '@/lib/api';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowRight } from 'lucide-react';
+import { CategoryPageDebug } from '@/components/category-page-debug';
 
 export default async function CategoryPage({ params }: { params: Promise<{ category: string }> | { category: string } }) {
     try {
@@ -49,6 +50,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
             
             return (
                 <div className="container py-12">
+                    <CategoryPageDebug />
                     <h1 className="text-3xl font-bold mb-4">Category not found</h1>
                     <div className="space-y-2 text-muted-foreground">
                         <p>The category "{resolvedParams.category}" was not found.</p>
@@ -130,6 +132,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
 
         return (
             <div className="container mx-auto px-4 py-8">
+                <CategoryPageDebug />
                 <h1 className="text-4xl font-bold mb-2 text-primary">{category.name} Calculators</h1>
                 <p className="text-muted-foreground mb-8">
                     Browse through our collection of {calculators.length} free {category.name.toLowerCase()} calculators.
@@ -225,6 +228,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
         
         return (
             <div className="container py-12">
+                <CategoryPageDebug />
                 <h1 className="text-3xl font-bold mb-4">Error loading category</h1>
                 <div className="space-y-2 text-muted-foreground">
                     <p className="font-semibold">Error details:</p>
