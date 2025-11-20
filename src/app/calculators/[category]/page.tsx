@@ -2,6 +2,7 @@ import { getCategories } from '@/lib/categories';
 import { api } from '@/lib/api';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
+import { CategoryList } from '@/components/category-list';
 import { ArrowRight } from 'lucide-react';
 
 // Disable static generation for this page to ensure fresh data
@@ -137,9 +138,15 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
             calculatorsBySubcategory[calc.subcategory_id].push(calc);
         });
 
-        // Sort subcategories by name
+        // Filter subcategories to only show those with calculators
+        // Sort subcategories by name, but only include those that have calculators
         const sortedSubcategories = Array.isArray(subcategories) 
-            ? [...subcategories].sort((a, b) => a.name.localeCompare(b.name))
+            ? [...subcategories]
+                .filter(sub => {
+                    const calcCount = calculatorsBySubcategory[sub.id]?.length || 0;
+                    return calcCount > 0; // Only show subcategories with calculators
+                })
+                .sort((a, b) => a.name.localeCompare(b.name))
             : [];
 
         console.log('[CategoryPage] Final data:', {
@@ -153,18 +160,28 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
 
         return (
             <div className="container mx-auto px-4 py-8">
-                <h1 className="text-4xl font-bold mb-2 text-primary">{category.name} Calculators</h1>
-                <p className="text-muted-foreground mb-8">
-                    Browse through our collection of {calculators.length} free {category.name.toLowerCase()} calculators.
-                </p>
-                
-                <div className="bg-card p-6 rounded-lg shadow-sm">
+                <div className="flex flex-col lg:flex-row gap-8">
+                    {/* Category Sidebar - Show on desktop/laptop (lg and above), hide on mobile/tablet */}
+                    <aside className="hidden lg:block lg:w-64 flex-shrink-0">
+                        <div className="sticky top-24">
+                            <CategoryList currentCategory={category.slug} />
+                        </div>
+                    </aside>
+
+                    {/* Main Content */}
+                    <div className="flex-1 min-w-0">
+                        <h1 className="text-4xl font-bold mb-2 text-primary">{category.name} Calculators</h1>
+                        <p className="text-muted-foreground mb-8">
+                            Browse through our collection of {calculators.length} free {category.name.toLowerCase()} calculators.
+                        </p>
+                        
+                        <div className="bg-card p-6 rounded-lg shadow-sm">
                     {sortedSubcategories.length > 0 ? (
                         <div className="space-y-12 mt-8">
                             {sortedSubcategories.map(subcategory => {
                                 const subcategoryCalculators = calculatorsBySubcategory[subcategory.id] || [];
                                 
-                                // Show subcategory even if it has no calculators (but with a message)
+                                // Only show subcategories that have calculators (filtered above)
                                 return (
                                     <div key={subcategory.id}>
                                         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
@@ -174,28 +191,22 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
                                                 ({subcategoryCalculators.length} {subcategoryCalculators.length === 1 ? 'calculator' : 'calculators'})
                                             </span>
                                         </h2>
-                                        {subcategoryCalculators.length > 0 ? (
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                                {subcategoryCalculators.map(calc => (
-                                                    <Link 
-                                                        href={`/calculators/${category.slug}/${calc.slug}`} 
-                                                        key={calc.id} 
-                                                        className="group"
-                                                    >
-                                                        <Card className="h-full transition-all group-hover:shadow-md group-hover:-translate-y-0.5">
-                                                            <CardContent className="p-4 flex items-center justify-between">
-                                                                <h3 className="font-semibold text-base">{calc.name}</h3>
-                                                                <ArrowRight className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                            </CardContent>
-                                                        </Card>
-                                                    </Link>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <p className="text-muted-foreground text-sm">
-                                                No calculators available in this subcategory yet.
-                                            </p>
-                                        )}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                            {subcategoryCalculators.map(calc => (
+                                                <Link 
+                                                    href={`/calculators/${category.slug}/${calc.slug}`} 
+                                                    key={calc.id} 
+                                                    className="group"
+                                                >
+                                                    <Card className="h-full transition-all group-hover:shadow-md group-hover:-translate-y-0.5">
+                                                        <CardContent className="p-4 flex items-center justify-between">
+                                                            <h3 className="font-semibold text-base">{calc.name}</h3>
+                                                            <ArrowRight className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                        </CardContent>
+                                                    </Card>
+                                                </Link>
+                                            ))}
+                                        </div>
                                     </div>
                                 );
                             })}
@@ -235,6 +246,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
                             )}
                         </div>
                     )}
+                    </div>
+                    </div>
                 </div>
             </div>
         );

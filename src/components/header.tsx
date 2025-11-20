@@ -111,7 +111,7 @@ export function Header() {
         </div>
       </div>
       {!isHomePage && (
-        <nav className="border-t">
+        <nav className="border-t lg:hidden">
           <div className="container px-4 md:px-6">
               <Carousel
                 opts={{
