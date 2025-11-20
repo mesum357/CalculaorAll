@@ -1,14 +1,20 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import { getCategories } from '@/lib/categories';
+import Link from 'next/link';
 
 export function CategoryPageDebug() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [debugInfo, setDebugInfo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Always show debug for now (temporarily enabled for Render debugging)
+  // Can be toggled with ?debug=false to hide
+  const showDebug = searchParams?.get('debug') !== 'false';
 
   useEffect(() => {
     async function fetchDebugInfo() {
@@ -101,8 +107,16 @@ export function CategoryPageDebug() {
     }
   }, [pathname]);
 
-  // Only show on category pages (temporarily showing in production for debugging)
+  // Only show on category pages
   if (!pathname?.includes('/calculators/')) {
+    return null;
+  }
+  
+  // Always show in production for now (can be toggled with ?debug=true in URL)
+  // This ensures it shows on Render deployment
+  const shouldShow = showDebug || true; // Temporarily always show
+  
+  if (!shouldShow) {
     return null;
   }
 
@@ -119,8 +133,13 @@ export function CategoryPageDebug() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-4 bg-blue-50 dark:bg-blue-900 border border-blue-300 dark:border-blue-700 rounded mb-4">
-      <h3 className="text-lg font-bold mb-2">🐛 Category Page Debug Info</h3>
+    <div className="container mx-auto px-4 py-4 bg-blue-50 dark:bg-blue-900 border-2 border-blue-500 dark:border-blue-400 rounded mb-4 shadow-lg">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-lg font-bold">🐛 Category Page Debug Info</h3>
+        <span className="text-xs bg-blue-200 dark:bg-blue-800 px-2 py-1 rounded">
+          {typeof window !== 'undefined' ? 'Client-side' : 'Server-side'}
+        </span>
+      </div>
       <div className="space-y-2 text-sm">
         <div>
           <strong>Pathname:</strong> {debugInfo.pathname}
@@ -165,21 +184,26 @@ export function CategoryPageDebug() {
             )}
           </>
         ) : (
-          <div>
-            <strong>❌ Category "{debugInfo.categorySlug}" NOT FOUND</strong>
-            <div className="mt-2">
-              <strong>Available Categories ({debugInfo.allCategoriesCount}):</strong>
-              <ul className="list-disc list-inside ml-4 mt-1">
-                {debugInfo.allCategories?.map((cat: any) => (
-                  <li key={cat.id}>
-                    <Link href={`/calculators/${cat.slug}`} className="text-primary hover:underline">
-                      {cat.name} ({cat.slug})
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+            <div>
+              <strong className="text-red-600 dark:text-red-400">❌ Category "{debugInfo.categorySlug}" NOT FOUND</strong>
+              <div className="mt-2 p-2 bg-yellow-50 dark:bg-yellow-900 rounded">
+                <strong>Available Categories ({debugInfo.allCategoriesCount}):</strong>
+                <ul className="list-disc list-inside ml-4 mt-1 space-y-1">
+                  {debugInfo.allCategories?.map((cat: any) => (
+                    <li key={cat.id}>
+                      <Link href={`/calculators/${cat.slug}`} className="text-primary hover:underline font-medium">
+                        {cat.name} ({cat.slug}) - ID: {cat.id}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+                {!debugInfo.allCategories?.some((cat: any) => cat.slug.toLowerCase() === debugInfo.categorySlug?.toLowerCase()) && (
+                  <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+                    ⚠️ No category found with slug "{debugInfo.categorySlug}" (case-insensitive check also failed)
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
         )}
         {debugInfo.error && (
           <div className="text-red-600 dark:text-red-400">

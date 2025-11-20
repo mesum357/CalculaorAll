@@ -4,20 +4,30 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowRight } from 'lucide-react';
 import { CategoryPageDebug } from '@/components/category-page-debug';
+import { Suspense } from 'react';
 
 export default async function CategoryPage({ params }: { params: Promise<{ category: string }> | { category: string } }) {
     try {
         // Handle both sync and async params (Next.js 14+ compatibility)
         const resolvedParams = await Promise.resolve(params);
         
-        console.log('[CategoryPage] ========== PAGE LOAD STARTED ==========');
-        console.log('[CategoryPage] Received params:', {
+        // Log to both console and create a debug object that can be accessed
+        const debugData = {
             category: resolvedParams.category,
             categoryType: typeof resolvedParams.category,
             categoryLength: resolvedParams.category?.length,
             allParams: resolvedParams,
-            isPromise: params instanceof Promise
-        });
+            isPromise: params instanceof Promise,
+            timestamp: new Date().toISOString()
+        };
+        
+        console.log('[CategoryPage] ========== PAGE LOAD STARTED ==========');
+        console.log('[CategoryPage] Received params:', debugData);
+        
+        // Store debug data in a global variable for client-side access
+        if (typeof globalThis !== 'undefined') {
+            (globalThis as any).__categoryPageDebug__ = debugData;
+        }
         
         const allCategories = await getCategories();
         console.log('[CategoryPage] Categories fetched from getCategories():', {
@@ -50,7 +60,9 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
             
             return (
                 <div className="container py-12">
-                    <CategoryPageDebug />
+                    <Suspense fallback={<div className="mb-4 text-sm text-muted-foreground">Loading debug info...</div>}>
+                        <CategoryPageDebug />
+                    </Suspense>
                     <h1 className="text-3xl font-bold mb-4">Category not found</h1>
                     <div className="space-y-2 text-muted-foreground">
                         <p>The category "{resolvedParams.category}" was not found.</p>
@@ -132,7 +144,9 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
 
         return (
             <div className="container mx-auto px-4 py-8">
-                <CategoryPageDebug />
+                <Suspense fallback={<div className="mb-4 text-sm text-muted-foreground">Loading debug info...</div>}>
+                    <CategoryPageDebug />
+                </Suspense>
                 <h1 className="text-4xl font-bold mb-2 text-primary">{category.name} Calculators</h1>
                 <p className="text-muted-foreground mb-8">
                     Browse through our collection of {calculators.length} free {category.name.toLowerCase()} calculators.
@@ -228,7 +242,9 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
         
         return (
             <div className="container py-12">
-                <CategoryPageDebug />
+                <Suspense fallback={<div className="mb-4 text-sm text-muted-foreground">Loading debug info...</div>}>
+                    <CategoryPageDebug />
+                </Suspense>
                 <h1 className="text-3xl font-bold mb-4">Error loading category</h1>
                 <div className="space-y-2 text-muted-foreground">
                     <p className="font-semibold">Error details:</p>
