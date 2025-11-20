@@ -25,7 +25,31 @@ export function CategoryPageDebug() {
           categories: allCategories.map(c => ({ id: c.id, name: c.name, slug: c.slug }))
         });
         
+        console.log('[CategoryPageDebug] Looking for category with slug:', categorySlug);
+        console.log('[CategoryPageDebug] Available slugs:', allCategories.map(c => c.slug));
+        console.log('[CategoryPageDebug] Slug match check:', {
+          searchedSlug: categorySlug,
+          availableSlugs: allCategories.map(c => c.slug),
+          exactMatch: allCategories.some(c => c.slug === categorySlug),
+          caseInsensitiveMatch: allCategories.some(c => c.slug.toLowerCase() === categorySlug.toLowerCase()),
+          matchingCategory: allCategories.find(c => c.slug === categorySlug || c.slug.toLowerCase() === categorySlug.toLowerCase())
+        });
+        
         const category = allCategories.find(c => c.slug === categorySlug);
+        
+        if (!category) {
+          console.warn('[CategoryPageDebug] ❌ Category not found!', {
+            searchedSlug: categorySlug,
+            availableSlugs: allCategories.map(c => c.slug),
+            allCategories: allCategories.map(c => ({ id: c.id, name: c.name, slug: c.slug }))
+          });
+        } else {
+          console.log('[CategoryPageDebug] ✅ Category found:', {
+            id: category.id,
+            name: category.name,
+            slug: category.slug
+          });
+        }
         
         let calculators: any[] = [];
         let subcategories: any[] = [];
@@ -77,8 +101,8 @@ export function CategoryPageDebug() {
     }
   }, [pathname]);
 
-  // Only show on category pages and in development
-  if (process.env.NODE_ENV !== 'development' || !pathname?.includes('/calculators/')) {
+  // Only show on category pages (temporarily showing in production for debugging)
+  if (!pathname?.includes('/calculators/')) {
     return null;
   }
 
@@ -118,15 +142,43 @@ export function CategoryPageDebug() {
             <div>
               <strong>Subcategories:</strong> {debugInfo.subcategoriesCount}
             </div>
+            {debugInfo.subcategoriesCount > 0 && (
+              <div>
+                <strong>Subcategory Names:</strong>
+                <ul className="list-disc list-inside ml-4 mt-1">
+                  {debugInfo.subcategories?.map((sub: any) => (
+                    <li key={sub.id}>{sub.name} (ID: {sub.id})</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {debugInfo.calculatorsCount > 0 && (
+              <div>
+                <strong>Calculator Names:</strong>
+                <ul className="list-disc list-inside ml-4 mt-1">
+                  {debugInfo.calculators?.slice(0, 5).map((calc: any) => (
+                    <li key={calc.id}>{calc.name} (Subcategory ID: {calc.subcategory_id})</li>
+                  ))}
+                  {debugInfo.calculatorsCount > 5 && <li>... and {debugInfo.calculatorsCount - 5} more</li>}
+                </ul>
+              </div>
+            )}
           </>
         ) : (
           <div>
-            <strong>Available Categories:</strong>
-            <ul className="list-disc list-inside ml-4 mt-1">
-              {debugInfo.allCategories?.map((cat: any) => (
-                <li key={cat.id}>{cat.name} ({cat.slug})</li>
-              ))}
-            </ul>
+            <strong>❌ Category "{debugInfo.categorySlug}" NOT FOUND</strong>
+            <div className="mt-2">
+              <strong>Available Categories ({debugInfo.allCategoriesCount}):</strong>
+              <ul className="list-disc list-inside ml-4 mt-1">
+                {debugInfo.allCategories?.map((cat: any) => (
+                  <li key={cat.id}>
+                    <Link href={`/calculators/${cat.slug}`} className="text-primary hover:underline">
+                      {cat.name} ({cat.slug})
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         )}
         {debugInfo.error && (
