@@ -140,8 +140,25 @@ export async function getMainCategories(): Promise<Category[]> {
 
 // Get other categories (for other categories page)
 export async function getOtherCategories(): Promise<Category[]> {
+  console.log('[Categories] getOtherCategories called');
+  
   const allCategories = await getCategories();
-  return allCategories.filter(cat => !MAIN_CATEGORY_SLUGS.includes(cat.slug));
+  
+  console.log('[Categories] All categories for other categories page:', {
+    total: allCategories.length,
+    allSlugs: allCategories.map(c => c.slug),
+    mainCategorySlugs: MAIN_CATEGORY_SLUGS
+  });
+  
+  const otherCategories = allCategories.filter(cat => !MAIN_CATEGORY_SLUGS.includes(cat.slug));
+  
+  console.log('[Categories] Other categories filtered:', {
+    count: otherCategories.length,
+    slugs: otherCategories.map(c => c.slug),
+    names: otherCategories.map(c => c.name)
+  });
+  
+  return otherCategories;
 }
 
 // Get icon for a category slug
