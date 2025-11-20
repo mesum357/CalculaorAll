@@ -37,22 +37,33 @@ interface BackupData {
 
 async function getBackupData(): Promise<BackupData | null> {
   try {
-    // Path to the backup file
-    const projectRoot = process.cwd();
-    const backupFilePath = path.join(projectRoot, 'data', 'calculators-backup.json');
+    // Fetch from API route - this is more reliable in production
+    // The API route handles path resolution correctly
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const apiUrl = `${baseUrl}/api/backup`;
     
-    // Check if file exists
-    if (!fs.existsSync(backupFilePath)) {
+    const response = await fetch(apiUrl, {
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      if (response.status === 404) {
+        console.log('[Backup Page] Backup file not found');
+        return null;
+      }
+      const errorData = await response.json().catch(() => ({}));
+      console.error('[Backup Page] Failed to fetch backup:', response.status, errorData);
       return null;
     }
     
-    // Read and parse the JSON file
-    const fileContent = fs.readFileSync(backupFilePath, 'utf8');
-    const backupData: BackupData = JSON.parse(fileContent);
-    
+    const backupData: BackupData = await response.json();
+    console.log('[Backup Page] Successfully loaded backup with', backupData.total_calculators, 'calculators');
     return backupData;
   } catch (error) {
-    console.error('Error reading backup file:', error);
+    console.error('[Backup Page] Error fetching backup file:', error);
     return null;
   }
 }
