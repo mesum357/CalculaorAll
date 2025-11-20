@@ -6,6 +6,10 @@ import { ArrowRight } from 'lucide-react';
 import { CategoryPageDebug } from '@/components/category-page-debug';
 import { Suspense } from 'react';
 
+// Disable static generation for this page to ensure fresh data
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function CategoryPage({ params }: { params: Promise<{ category: string }> | { category: string } }) {
     try {
         // Handle both sync and async params (Next.js 14+ compatibility)
@@ -43,19 +47,29 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
             lowercaseMatches: c.slug.toLowerCase() === resolvedParams.category?.toLowerCase()
         })));
         
-        const category = allCategories.find(c => c.slug === resolvedParams.category);
+        // Try exact match first
+        let category = allCategories.find(c => c.slug === resolvedParams.category);
+        
+        // If not found, try case-insensitive match
+        if (!category) {
+            category = allCategories.find(c => c.slug.toLowerCase() === resolvedParams.category?.toLowerCase());
+            
+            if (category) {
+                console.log('[CategoryPage] Category found via case-insensitive match:', {
+                    searchedSlug: resolvedParams.category,
+                    foundSlug: category.slug,
+                    foundName: category.name
+                });
+            }
+        }
         
         if (!category) {
-            // Try case-insensitive match
-            const categoryLower = allCategories.find(c => c.slug.toLowerCase() === resolvedParams.category?.toLowerCase());
-            
             console.error('[CategoryPage] ========== CATEGORY NOT FOUND ==========');
             console.error('[CategoryPage] Search params:', {
                 searchedSlug: resolvedParams.category,
                 searchedSlugLower: resolvedParams.category?.toLowerCase(),
                 availableSlugs: allCategories.map(c => c.slug),
                 availableSlugsLower: allCategories.map(c => c.slug.toLowerCase()),
-                caseInsensitiveMatch: categoryLower ? categoryLower.slug : null
             });
             
             return (
