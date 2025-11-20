@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { CategoryNavigation } from '@/components/category-navigation';
 import { PopularCalculators } from '@/components/popular-calculators';
 import { AdvancedCalculator } from '@/components/advanced-calculator';
-import { CategoryCards } from '@/components/category-cards';
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -94,9 +93,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* Category Cards Section */}
-      <CategoryCards />
 
       {/* Navigation + Search Section */}
       <section id="categories" className="w-full py-16 md:py-24 bg-background">
