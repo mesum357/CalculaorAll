@@ -157,9 +157,51 @@ export const api = {
   subcategories: {
     getAll: async (categoryId?: number) => {
       const url = categoryId ? `${API_BASE_URL}/subcategories?category_id=${categoryId}` : `${API_BASE_URL}/subcategories`;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Failed to fetch subcategories');
-      return response.json();
+      
+      console.log('[API] Fetching subcategories:', {
+        url,
+        categoryId,
+        timestamp: new Date().toISOString()
+      });
+      
+      try {
+        const response = await fetch(url, { credentials: 'include' });
+        
+        console.log('[API] Subcategories response:', {
+          url,
+          status: response.status,
+          statusText: response.statusText,
+          ok: response.ok,
+          headers: Object.fromEntries(response.headers.entries())
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('[API] Subcategories error response:', {
+            url,
+            status: response.status,
+            statusText: response.statusText,
+            body: errorText
+          });
+          throw new Error(`Failed to fetch subcategories: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('[API] Subcategories success:', {
+          url,
+          count: Array.isArray(data) ? data.length : 'not an array',
+          sample: Array.isArray(data) && data.length > 0 ? data.slice(0, 3).map(s => ({ id: s.id, name: s.name, category_id: s.category_id })) : 'no data'
+        });
+        
+        return data;
+      } catch (error) {
+        console.error('[API] Subcategories fetch error:', {
+          url,
+          error: error instanceof Error ? error.message : error,
+          stack: error instanceof Error ? error.stack : undefined
+        });
+        throw error;
+      }
     },
   },
   calculatorInteractions: {
