@@ -1,48 +1,20 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, FileJson } from 'lucide-react';
+import { ArrowLeft, Download, FileJson } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DownloadBackupButton } from '@/components/download-backup-button';
-import fs from 'fs';
-import path from 'path';
+import type { Calculator } from '@/lib/api';
 
 // Ensure this page is always rendered dynamically
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-interface BackupCalculator {
-  name: string;
-  slug: string;
-  description?: string | null;
-  subtitle?: string | null;
-  href?: string | null;
-  is_active: boolean;
-  category?: string;
-  subcategory?: string;
-  inputs?: any[];
-  results?: any[];
-  tags?: string[];
-  most_used?: boolean;
-  popular?: boolean;
-  likes?: number;
-}
-
-interface BackupData {
-  version: string;
-  last_updated: string;
-  total_calculators: number;
-  calculators: BackupCalculator[];
-}
-
-async function getBackupData(): Promise<BackupData | null> {
+async function getCalculatorsFromDatabase(): Promise<Calculator[]> {
   try {
-    // Fetch from API route - this is more reliable in production
-    // The API route handles path resolution correctly
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    const apiUrl = `${baseUrl}/api/backup`;
-    
-    const response = await fetch(apiUrl, {
+    // Fetch all calculators from the database API
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+    const response = await fetch(`${API_BASE_URL}/calculators`, {
       cache: 'no-store',
       headers: {
         'Content-Type': 'application/json',
@@ -50,26 +22,44 @@ async function getBackupData(): Promise<BackupData | null> {
     });
     
     if (!response.ok) {
-      if (response.status === 404) {
-        console.log('[Backup Page] Backup file not found');
-        return null;
-      }
-      const errorData = await response.json().catch(() => ({}));
-      console.error('[Backup Page] Failed to fetch backup:', response.status, errorData);
-      return null;
+      throw new Error(`Failed to fetch calculators: ${response.status}`);
     }
     
-    const backupData: BackupData = await response.json();
-    console.log('[Backup Page] Successfully loaded backup with', backupData.total_calculators, 'calculators');
-    return backupData;
+    const calculators: Calculator[] = await response.json();
+    return calculators;
   } catch (error) {
-    console.error('[Backup Page] Error fetching backup file:', error);
-    return null;
+    console.error('[Backup Page] Error fetching calculators from database:', error);
+    return [];
   }
 }
 
 export default async function BackupCalculatorsPage() {
-  const backupData = await getBackupData();
+  const calculators = await getCalculatorsFromDatabase();
+
+  // Format calculators for JSON display (similar to backup format)
+  const formattedCalculators = calculators.map(calc => ({
+    name: calc.name,
+    slug: calc.slug,
+    description: calc.description || null,
+    subtitle: (calc as any).subtitle || null,
+    href: (calc as any).href || null,
+    is_active: calc.is_active,
+    category: calc.category_name || null,
+    subcategory: calc.subcategory_name || null,
+    inputs: calc.inputs || [],
+    results: calc.results || [],
+    tags: calc.tags || [],
+    most_used: calc.most_used || false,
+    popular: calc.popular || false,
+    likes: calc.likes || 0,
+  }));
+
+  const jsonData = {
+    version: '1.0',
+    last_updated: new Date().toISOString(),
+    total_calculators: formattedCalculators.length,
+    calculators: formattedCalculators
+  };
 
   return (
     <div className="container py-12">
@@ -84,23 +74,23 @@ export default async function BackupCalculatorsPage() {
           <div>
             <h1 className="text-4xl font-bold font-headline mb-2">Backup Calculators</h1>
             <p className="text-muted-foreground">
-              View the backup JSON file containing all calculators
+              View all calculators from the database in JSON format
             </p>
           </div>
-          {backupData && (
-            <DownloadBackupButton backupData={backupData} />
+          {calculators.length > 0 && (
+            <DownloadBackupButton backupData={jsonData} />
           )}
         </div>
       </div>
 
-      {!backupData ? (
+      {calculators.length === 0 ? (
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-12">
               <FileJson className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-muted-foreground text-lg mb-2">No backup file found</p>
+              <p className="text-muted-foreground text-lg mb-2">No calculators found</p>
               <p className="text-sm text-muted-foreground">
-                The backup file will be created automatically when calculators are added, updated, or deleted.
+                There are no calculators in the database yet.
               </p>
             </div>
           </CardContent>
@@ -112,27 +102,45 @@ export default async function BackupCalculatorsPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Backup Information</CardTitle>
-                  <CardDescription>Metadata about this backup file</CardDescription>
+                  <CardTitle>Calculators Information</CardTitle>
+                  <CardDescription>All calculators from the database</CardDescription>
                 </div>
-                <DownloadBackupButton backupData={backupData} />
+                <DownloadBackupButton backupData={jsonData} />
               </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Version</p>
-                  <p className="text-lg font-semibold">{backupData.version}</p>
+                  <p className="text-lg font-semibold">{jsonData.version}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Total Calculators</p>
-                  <p className="text-lg font-semibold">{backupData.total_calculators}</p>
+                  <p className="text-lg font-semibold">{jsonData.total_calculators}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Last Updated</p>
                   <p className="text-lg font-semibold">
-                    {new Date(backupData.last_updated).toLocaleString()}
+                    {new Date(jsonData.last_updated).toLocaleString()}
                   </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* JSON Display */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>JSON Data</CardTitle>
+              <CardDescription>Complete JSON representation of all calculators</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="relative">
+                <pre className="bg-muted p-4 rounded-lg overflow-auto max-h-[600px] text-sm">
+                  <code>{JSON.stringify(jsonData, null, 2)}</code>
+                </pre>
+                <div className="absolute top-4 right-4">
+                  <DownloadBackupButton backupData={jsonData} />
                 </div>
               </div>
             </CardContent>
@@ -140,9 +148,9 @@ export default async function BackupCalculatorsPage() {
 
           {/* Calculators List */}
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold font-headline mb-4">Calculators</h2>
+            <h2 className="text-2xl font-bold font-headline mb-4">Calculators ({calculators.length})</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {backupData.calculators.map((calc, index) => (
+              {formattedCalculators.map((calc, index) => (
                 <Card key={index} className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex items-start justify-between">
@@ -217,10 +225,8 @@ export default async function BackupCalculatorsPage() {
               ))}
             </div>
           </div>
-
         </>
       )}
     </div>
   );
 }
-
