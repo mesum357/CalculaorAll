@@ -64,7 +64,7 @@ export function CategoryCards() {
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {mainCategories.map((category) => (
+          {mainCategories.filter(cat => cat.count > 0).map((category) => (
             <Link 
               href={category.href} 
               key={category.slug} 

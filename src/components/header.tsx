@@ -204,7 +204,7 @@ export function Header() {
                 className="w-full"
               >
                 <CarouselContent>
-                  {categories.map((category) => (
+                  {categories.filter(cat => cat.count > 0).map((category) => (
                     <CarouselItem key={category.id} className="basis-auto">
                       <Link href={category.href}>
                         <div className={cn(

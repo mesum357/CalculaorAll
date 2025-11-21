@@ -48,7 +48,7 @@ export function CategoryList({ currentCategory }: { currentCategory?: string }) 
             </CardHeader>
             <CardContent>
                 <nav className="flex flex-col gap-2">
-                    {categories.map(category => (
+                    {categories.filter(cat => cat.count > 0).map(category => (
                         <Link
                             key={category.id}
                             href={category.href}

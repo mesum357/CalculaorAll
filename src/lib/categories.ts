@@ -127,7 +127,9 @@ export async function getMainCategories(): Promise<Category[]> {
     slugs: allCategories.map(c => c.slug)
   });
   
-  const mainCategories = allCategories.filter(cat => MAIN_CATEGORY_SLUGS.includes(cat.slug));
+  const mainCategories = allCategories
+    .filter(cat => MAIN_CATEGORY_SLUGS.includes(cat.slug))
+    .filter(cat => cat.count > 0); // Only show categories with calculators
   
   console.log('[Categories] Main categories after filtering:', {
     count: mainCategories.length,
@@ -150,7 +152,9 @@ export async function getOtherCategories(): Promise<Category[]> {
     mainCategorySlugs: MAIN_CATEGORY_SLUGS
   });
   
-  const otherCategories = allCategories.filter(cat => !MAIN_CATEGORY_SLUGS.includes(cat.slug));
+  const otherCategories = allCategories
+    .filter(cat => !MAIN_CATEGORY_SLUGS.includes(cat.slug))
+    .filter(cat => cat.count > 0); // Only show categories with calculators
   
   console.log('[Categories] Other categories filtered:', {
     count: otherCategories.length,

@@ -61,7 +61,7 @@ export function CategoryNavigation() {
         Browse by Category
       </h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {mainCategories.map((category) => (
+        {mainCategories.filter(cat => cat.count > 0).map((category) => (
           <Link href={category.href} key={category.slug} className="group">
             <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 h-full bg-white dark:bg-card">
               <CardContent className="p-6 flex flex-col items-start justify-center gap-3 text-left">
