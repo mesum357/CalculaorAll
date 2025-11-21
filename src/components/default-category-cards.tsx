@@ -76,18 +76,6 @@ const DEFAULT_CATEGORIES: DefaultCategory[] = [
     description: 'Area, volume, materials',
   },
   {
-    name: 'Everyday',
-    slug: 'everyday',
-    icon: Scale,
-    description: 'Common calculations',
-  },
-  {
-    name: 'Biology',
-    slug: 'biology',
-    icon: Leaf,
-    description: 'Scientific calculations',
-  },
-  {
     name: 'Food',
     slug: 'food',
     icon: UtensilsCrossed,

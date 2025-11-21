@@ -44,12 +44,10 @@ const categoryIconMap: Record<string, LucideIcon> = {
 
 // Categories to show on the main browse section
 export const MAIN_CATEGORY_SLUGS = [
-  'biology',
   'chemistry',
   'construction',
   'conversion',
   'ecology',
-  'everyday',
   'finance',
   'food',
   'health',

@@ -6,7 +6,7 @@ import { Search } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Carousel,
   CarouselContent,
@@ -16,17 +16,23 @@ import {
 } from "@/components/ui/carousel";
 import { getCategories, type Category } from "@/lib/categories";
 import { cn } from "@/lib/utils";
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Logo } from "./logo";
 import { useAuth } from "@/contexts/auth-context";
 import { UserProfileMenu } from "./user-profile-menu";
+import { api, type Calculator } from "@/lib/api";
 
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<Calculator[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+  const router = useRouter();
   const { user, loading } = useAuth();
 
   useEffect(() => {
@@ -58,6 +64,59 @@ export function Header() {
     }
   }, [categories, pathname]);
 
+  // Search functionality
+  useEffect(() => {
+    const searchCalculators = async () => {
+      if (searchQuery.trim().length < 2) {
+        setSearchResults([]);
+        setShowSuggestions(false);
+        return;
+      }
+
+      try {
+        const allCalculators = await api.calculators.getAll({ is_active: true });
+        const query = searchQuery.toLowerCase();
+        const filtered = allCalculators
+          .filter(calc => 
+            calc.name.toLowerCase().includes(query) ||
+            calc.description?.toLowerCase().includes(query) ||
+            calc.subtitle?.toLowerCase().includes(query) ||
+            calc.category_name?.toLowerCase().includes(query) ||
+            calc.subcategory_name?.toLowerCase().includes(query)
+          )
+          .slice(0, 10); // Limit to 10 results
+        
+        setSearchResults(filtered);
+        setShowSuggestions(filtered.length > 0);
+      } catch (error) {
+        console.error('Error searching calculators:', error);
+        setSearchResults([]);
+        setShowSuggestions(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(searchCalculators, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery]);
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleCalculatorClick = (calc: Calculator) => {
+    setSearchQuery("");
+    setShowSuggestions(false);
+    router.push(`/calculators/${calc.category_slug}/${calc.slug}`);
+  };
+
   // Check if we're on the homepage
   const isHomePage = pathname === "/";
 
@@ -76,13 +135,37 @@ export function Header() {
         </Link>
 
         <div className="flex-1 flex justify-center px-4 lg:px-16">
-          <div className="relative w-full max-w-md hidden md:block">
-             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <div className="relative w-full max-w-md hidden md:block" ref={searchRef}>
+             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
              <Input
                 type="search"
                 placeholder="Search calculators..."
                 className="w-full rounded-full pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => searchQuery.length >= 2 && searchResults.length > 0 && setShowSuggestions(true)}
               />
+             {showSuggestions && searchResults.length > 0 && (
+               <div className="absolute top-full mt-2 w-full bg-background border border-border rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+                 {searchResults.map((calc) => (
+                   <button
+                     key={calc.id}
+                     onClick={() => handleCalculatorClick(calc)}
+                     className="w-full text-left px-4 py-3 hover:bg-muted transition-colors border-b border-border last:border-b-0"
+                   >
+                     <div className="font-medium text-sm">{calc.name}</div>
+                     {(calc.subtitle || calc.description) && (
+                       <div className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                         {calc.subtitle || calc.description}
+                       </div>
+                     )}
+                     <div className="text-xs text-muted-foreground mt-1">
+                       {calc.category_name} {calc.subcategory_name && `• ${calc.subcategory_name}`}
+                     </div>
+                   </button>
+                 ))}
+               </div>
+             )}
           </div>
         </div>
         

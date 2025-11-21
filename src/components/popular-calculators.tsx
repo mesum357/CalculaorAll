@@ -114,7 +114,7 @@ export function PopularCalculators() {
                     </CardTitle>
                   </div>
                   <CardDescription className="text-sm leading-relaxed text-muted-foreground">
-                    {calc.subtitle || calc.description || 'No description available.'}
+                    {calc.subtitle || 'No description available.'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0 mt-auto">
