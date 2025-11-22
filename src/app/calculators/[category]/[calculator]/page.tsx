@@ -217,40 +217,41 @@ export default function CalculatorPage() {
             // Handle arrays (multiple values from comma-separated expressions)
             let formattedValue: string | number | string[];
             const resultValue = computed[result.key];
+            
+            // Helper to safely convert and format a value
+            const safeFormatValue = (val: any, fmt: string): string | number => {
+              if (typeof val === 'string') return val;
+              if (val === null || val === undefined) return 'N/A';
+              
+              const numVal = typeof val === 'number' ? val : Number(val);
+              if (isNaN(numVal)) {
+                if (typeof val === 'boolean') return val.toString();
+                return String(val);
+              }
+              
+              if (fmt === 'currency') {
+                return new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }).format(numVal);
+              } else if (fmt === 'percent') {
+                return `${numVal.toFixed(2)}%`;
+              } else if (fmt === 'integer') {
+                return Math.round(numVal);
+              } else {
+                return parseFloat(numVal.toFixed(2));
+              }
+            };
+            
             if (Array.isArray(resultValue)) {
-              formattedValue = resultValue.map(v => {
-                if (typeof v === 'string') return v;
-                if (result.format === 'currency') {
-                  return new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  }).format(v);
-                } else if (result.format === 'percent') {
-                  return `${v.toFixed(2)}%`;
-                } else if (result.format === 'integer') {
-                  return Math.round(v).toString();
-                } else {
-                  return v.toFixed(2);
-                }
-              }).join(', ');
+              formattedValue = resultValue.map(v => safeFormatValue(v, result.format)).join(', ');
             } else if (typeof resultValue === 'string') {
               // If value is already a string (e.g., from toString(2) for binary), return it as-is
               formattedValue = resultValue;
-            } else if (result.format === 'currency') {
-              formattedValue = new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              }).format(resultValue);
-            } else if (result.format === 'percent') {
-              formattedValue = `${resultValue.toFixed(2)}%`;
-            } else if (result.format === 'integer') {
-              formattedValue = Math.round(resultValue);
             } else {
-              formattedValue = parseFloat(resultValue.toFixed(2));
+              formattedValue = safeFormatValue(resultValue, result.format);
             }
 
             const resultKey = result.key || result.name || result.label || `result_${result.id}`;
