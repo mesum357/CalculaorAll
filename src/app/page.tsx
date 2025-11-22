@@ -62,7 +62,7 @@ export default function Home() {
               Over 3,700 free calculators. From algebra to finance, we've got
               you covered.
             </p>
-            <div className="mt-8 max-w-lg mx-auto lg:mx-0">
+            {/* <div className="mt-8 max-w-lg mx-auto lg:mx-0">
               <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Button
                   size="lg"
@@ -86,7 +86,7 @@ export default function Home() {
                   </Link>
                 </Button>
               </div>
-            </div>
+            </div> */}
           </div>
           <div className="flex items-center justify-center">
             <AdvancedCalculator />

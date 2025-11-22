@@ -521,22 +521,29 @@ export function AdvancedCalculator() {
 
   return (
     <Card className="w-full max-w-md mx-auto shadow-2xl overflow-hidden bg-card/80 backdrop-blur-sm border-white/20">
-      <CardContent className="p-2 flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100vh - 4rem)', height: 'calc(100vh - 4rem)' }}>
-        {/* Calculator Section - Fixed height, no scroll */}
-        <div className="flex-shrink-0 overflow-hidden">
+      <CardContent className="p-2 flex flex-col" style={{ height: 'auto', minHeight: '700px' }}>
+        {/* Calculator Section - Show fully, no scrolling */}
+        <div className="flex-shrink-0 overflow-visible">
           {renderCalculator()}
         </div>
         
         {/* Most Used Calculators Section - Shows 9 cards (Basic + Scientific + 7 from API), then scrollable */}
-        <div className="mt-4 p-2 bg-background/50 rounded-lg flex-shrink-0 overflow-hidden flex flex-col min-h-0">
+        <div className="mt-4 p-2 bg-background/50 rounded-lg flex flex-col flex-shrink-0">
           <h3 className="text-xs font-semibold text-muted-foreground mb-2 px-1 flex-shrink-0">Most Used</h3>
-          <div className="grid grid-cols-3 gap-2 overflow-y-auto overflow-x-hidden flex-1 min-h-0" style={{ maxHeight: '400px' }}>
+          <div 
+            className="grid grid-cols-3 gap-2 overflow-y-auto overflow-x-hidden"
+            style={{ 
+              gridAutoRows: '90px',
+              height: '286px',
+              maxHeight: '286px'
+            }}
+          >
             {loadingCalculators ? (
               // Loading skeleton - show 9 cards (Basic + Scientific + 7 from API)
               Array.from({ length: 9 }).map((_, i) => (
                 <div
                   key={i}
-                  className="flex flex-col items-center justify-center p-2 rounded-lg bg-muted/50 animate-pulse"
+                  className="flex flex-col items-center justify-center p-2 rounded-lg bg-muted/50 animate-pulse h-full"
                 >
                   <div className="h-5 w-5 rounded bg-muted mb-1" />
                   <div className="h-3 w-full rounded bg-muted" />
