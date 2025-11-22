@@ -262,6 +262,19 @@ export const api = {
       if (!response.ok) throw new Error('Failed to submit comment');
       return response.json();
     },
+    // User favorites
+    getUserFavorites: async (): Promise<Calculator[]> => {
+      const response = await fetch(`${API_BASE_URL}/calculator-interactions/user/favorites`, {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Authentication required');
+        }
+        throw new Error('Failed to fetch favorites');
+      }
+      return response.json();
+    },
   },
   auth: {
     register: async (email: string, password: string, name: string) => {

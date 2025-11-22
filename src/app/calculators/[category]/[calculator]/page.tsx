@@ -4,21 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { api, type Calculator } from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Heart } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import Link from 'next/link';
-import { cn } from '@/lib/utils';
+import { ArrowLeft } from 'lucide-react';
 import { CalculatorInfo } from '@/components/calculator-info';
 import { AdvancedCalculator } from '@/components/advanced-calculator';
 import { Input } from '@/components/ui/input';
@@ -28,11 +14,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 export default function CalculatorPage() {
   const router = useRouter();
   const params = useParams();
-  const { toast } = useToast();
   const [calculator, setCalculator] = useState<Calculator | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isLiked, setIsLiked] = useState(false);
   const [inputValues, setInputValues] = useState<Record<string, string>>({});
   const [results, setResults] = useState<Record<string, any>>({});
 
@@ -213,19 +197,6 @@ export default function CalculatorPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inputValues, calculator]);
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    if (!isLiked) {
-      toast({
-        title: 'Added to favorites!',
-        description: 'You can find it in your profile.',
-      });
-    } else {
-      toast({
-        title: 'Removed from favorites.',
-      });
-    }
-  };
 
   if (loading) {
     return (
@@ -260,28 +231,6 @@ export default function CalculatorPage() {
         <div className="flex-1 text-center">
           <h1 className="text-2xl md:text-3xl font-bold font-headline">{calculator.name}</h1>
         </div>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="ghost" size="icon" onClick={handleLike} className="absolute right-4 top-1/2 -translate-y-1/2">
-              <Heart className={cn('h-6 w-6', isLiked ? 'text-red-500 fill-red-500' : 'text-muted-foreground')} />
-              <span className="sr-only">Favorite</span>
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Sign up to save your favorites!</AlertDialogTitle>
-              <AlertDialogDescription>
-                To like and save this calculator to your profile, you need to be logged in. Create an account to get started.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction asChild>
-                <Link href="/auth">Sign Up</Link>
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </div>
 
       {/* Calculator Body */}
