@@ -1,0 +1,38 @@
+{
+  "version": "1.0",
+  "last_updated": "2025-11-22T19:20:45.724Z",
+  "total_calculators": 1,
+  "calculators": [
+    {
+      "name": "Loan EMI Calculator",
+      "slug": "loan-emi-calculator",
+      "description": null,
+      "href": null,
+      "is_active": true,
+      "category": "Construction",
+      "subcategory": "Foundation calculators",
+      "subtitle": "Test Subtitle - Verify Fix",
+      "inputs": [
+        {
+          "key": "sdsd",
+          "type": "number",
+          "label": "sdsd",
+          "order": 0,
+          "required": true
+        }
+      ],
+      "results": [
+        {
+          "key": "sdsfsf",
+          "label": "sdsfsf",
+          "format": "number",
+          "formula": "sdsd* 100"
+        }
+      ],
+      "tags": [],
+      "most_used": false,
+      "likes": 0,
+      "popular": false
+    }
+  ]
+}
