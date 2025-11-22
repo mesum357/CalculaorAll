@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2025-11-22T20:28:40.408Z",
+  "last_updated": "2025-11-22T21:34:44.433Z",
   "total_calculators": 166,
   "calculators": [
     {
@@ -926,20 +926,12 @@
       "subcategory": "Numeral systems converters",
       "inputs": [
         {
-          "key": "input_value",
+          "key": "input",
           "type": "text",
-          "label": "Input value",
+          "label": "Input",
           "order": 0,
           "required": true,
           "defaultValue": "1010"
-        },
-        {
-          "key": "mode",
-          "type": "text",
-          "label": "Mode (bin2dec|dec2bin)",
-          "order": 1,
-          "required": true,
-          "defaultValue": "bin2dec"
         }
       ],
       "results": [
@@ -947,15 +939,11 @@
           "key": "converted",
           "unit": "",
           "label": "Converted value",
-          "format": "text",
-          "formula": "convertBinary(input_value,mode)"
+          "format": "number",
+          "formula": "Number(input).toString(2)"
         }
       ],
-      "tags": [
-        "binary",
-        "numeral",
-        "tech"
-      ],
+      "tags": [],
       "most_used": false,
       "likes": 0,
       "popular": false
