@@ -277,39 +277,127 @@ export function AdvancedCalculator() {
       return;
     }
     
+    // Create scope with input values and JavaScript objects/functions
+    const scope: Record<string, any> = {
+      ...inputValues,
+      Math: Math,
+      Number: Number,
+      Array: Array,
+      String: String,
+      Object: Object,
+      JSON: JSON,
+    };
+    const computed: Record<string, any> = {};
+
+    // Helper function to evaluate JavaScript code safely
+    const evaluateJavaScript = (code: string, currentScope: Record<string, any>): any => {
+      const scopeKeys = Object.keys(currentScope);
+      const scopeValues = scopeKeys.map(key => currentScope[key]);
+      
+      // Check if code contains statements (if, for, while, etc.)
+      const hasStatements = /^(if|for|while|switch|function|const|let|var|return)\s/.test(code.trim()) || 
+                            /;\s*(if|for|while|switch|function|const|let|var|return)/.test(code) ||
+                            (code.includes('{') && code.includes('}'));
+      
+      const functionBody = hasStatements ? code : `return ${code}`;
+      
+      try {
+        const func = new Function(...scopeKeys, functionBody);
+        return func(...scopeValues);
+      } catch (error: any) {
+        throw new Error(`JavaScript evaluation error: ${error.message}`);
+      }
+    };
+
     // Evaluate each result formula
     for (const result of results) {
       if (result.formula) {
         try {
-          // Replace input keys with their values in the formula
-          let formula = result.formula;
-          Object.keys(inputValues).forEach(key => {
-            const regex = new RegExp(`\\b${key}\\b`, 'g');
-            formula = formula.replace(regex, inputValues[key].toString());
-          });
-          
-          // Evaluate the formula (using eval like the basic calculator)
-          // eslint-disable-next-line no-eval
-          const value = eval(formula);
+          // Check if formula contains JavaScript syntax (loops, if-else, etc.)
+          const hasJavaScriptSyntax = /^(if|for|while|switch|function|const|let|var|return)\s/.test(result.formula.trim()) ||
+                                     /;\s*(if|for|while|switch|function|const|let|var|return)/.test(result.formula) ||
+                                     (result.formula.includes('{') && result.formula.includes('}')) ||
+                                     result.formula.includes('=>');
+
+          let value: any;
+          if (hasJavaScriptSyntax) {
+            // Use full JavaScript evaluation for complex code
+            value = evaluateJavaScript(result.formula, scope);
+          } else {
+            // For simple expressions, use scope-based evaluation
+            try {
+              // Check if formula contains comma-separated expressions (multiple values)
+              const hasComma = result.formula.includes(',');
+              const likelyMultipleExpressions = hasComma && (
+                /\)\s*,\s*\(/.test(result.formula) || // Pattern: ), (
+                result.formula.split(',').length > 2 || // Multiple commas
+                /^[^(]*\([^)]+\)\s*,\s*\(/.test(result.formula) // Pattern like: sqrt(x), (y)
+              );
+
+              if (likelyMultipleExpressions) {
+                // Wrap in array brackets to evaluate as array literal
+                try {
+                  value = evaluateJavaScript(`[${result.formula}]`, scope);
+                  if (!Array.isArray(value)) {
+                    // Fallback: split and evaluate each part
+                    const parts = result.formula.split(',').map(p => p.trim());
+                    if (parts.length > 1) {
+                      value = parts.map(part => evaluateJavaScript(part, scope));
+                    }
+                  }
+                } catch {
+                  value = evaluateJavaScript(result.formula, scope);
+                }
+              } else {
+                value = evaluateJavaScript(result.formula, scope);
+              }
+            } catch (error: any) {
+              throw new Error(`Evaluation failed: ${error.message}`);
+            }
+          }
+
+          // Store computed result and add to scope for subsequent formulas
+          computed[result.key] = value;
+          scope[result.key] = value;
           
           // Format the result
-          // If value is already a string (e.g., from toString(2) for binary), return it as-is
+          // Handle arrays (multiple values from comma-separated expressions)
           let formattedValue: string;
-          if (typeof value === 'string') {
-            formattedValue = value;
+          const resultValue = computed[result.key];
+          if (Array.isArray(resultValue)) {
+            formattedValue = resultValue.map(v => {
+              if (typeof v === 'string') return v;
+              if (result.format === 'currency') {
+                return new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }).format(v);
+              } else if (result.format === 'percent') {
+                return `${v.toFixed(2)}%`;
+              } else if (result.format === 'integer') {
+                return Math.round(v).toString();
+              } else {
+                return v.toFixed(2);
+              }
+            }).join(', ');
+          } else if (typeof resultValue === 'string') {
+            // If value is already a string (e.g., from toString(2) for binary), return it as-is
+            formattedValue = resultValue;
           } else if (result.format === 'currency') {
             formattedValue = new Intl.NumberFormat('en-US', {
               style: 'currency',
               currency: 'USD',
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
-            }).format(value);
+            }).format(resultValue);
           } else if (result.format === 'percent') {
-            formattedValue = `${value.toFixed(2)}%`;
+            formattedValue = `${resultValue.toFixed(2)}%`;
           } else if (result.format === 'integer') {
-            formattedValue = Math.round(value).toString();
+            formattedValue = Math.round(resultValue).toString();
           } else {
-            formattedValue = value.toFixed(2);
+            formattedValue = resultValue.toFixed(2);
           }
           
           if (result.unit && result.format !== 'currency' && result.format !== 'percent') {
