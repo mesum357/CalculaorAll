@@ -146,8 +146,11 @@ export default function CalculatorPage() {
             const value = eval(formula);
 
             // Format the result
+            // If value is already a string (e.g., from toString(2) for binary), return it as-is
             let formattedValue: string | number = value;
-            if (result.format === 'currency') {
+            if (typeof value === 'string') {
+              formattedValue = value;
+            } else if (result.format === 'currency') {
               formattedValue = new Intl.NumberFormat('en-US', {
                 style: 'currency',
                 currency: 'USD',
