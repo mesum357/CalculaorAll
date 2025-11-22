@@ -131,6 +131,7 @@ export default function CalculatorPage() {
       });
 
       // Create scope with input values and JavaScript objects/functions
+      // Add Math.js function mappings (sqrt, log, sin, etc.) to Math.* equivalents
       const scope: Record<string, any> = {
         ...inputValues,
         Math: Math,
@@ -139,6 +140,53 @@ export default function CalculatorPage() {
         String: String,
         Object: Object,
         JSON: JSON,
+        // Math.js function mappings
+        sqrt: (x: number) => Math.sqrt(x),
+        abs: (x: number) => Math.abs(x),
+        exp: (x: number) => Math.exp(x),
+        log: (x: number) => Math.log(x),
+        log10: (x: number) => Math.log10(x),
+        log2: (x: number) => Math.log2(x),
+        sin: (x: number) => Math.sin(x),
+        cos: (x: number) => Math.cos(x),
+        tan: (x: number) => Math.tan(x),
+        asin: (x: number) => Math.asin(x),
+        acos: (x: number) => Math.acos(x),
+        atan: (x: number) => Math.atan(x),
+        atan2: (y: number, x: number) => Math.atan2(y, x),
+        sinh: (x: number) => Math.sinh(x),
+        cosh: (x: number) => Math.cosh(x),
+        tanh: (x: number) => Math.tanh(x),
+        round: (x: number) => Math.round(x),
+        floor: (x: number) => Math.floor(x),
+        ceil: (x: number) => Math.ceil(x),
+        min: (...args: number[]) => Math.min(...args),
+        max: (...args: number[]) => Math.max(...args),
+        pow: (x: number, y: number) => Math.pow(x, y),
+        mod: (x: number, y: number) => x % y,
+        gcd: (a: number, b: number) => {
+          let x = Math.abs(a);
+          let y = Math.abs(b);
+          while (y !== 0) {
+            const temp = y;
+            y = x % y;
+            x = temp;
+          }
+          return x;
+        },
+        lcm: (a: number, b: number) => {
+          const gcdFunc = (x: number, y: number) => {
+            let num1 = Math.abs(x);
+            let num2 = Math.abs(y);
+            while (num2 !== 0) {
+              const temp = num2;
+              num2 = num1 % num2;
+              num1 = temp;
+            }
+            return num1;
+          };
+          return Math.abs(a * b) / (gcdFunc(a, b) || 1);
+        },
       };
       const computed: Record<string, any> = {};
 
@@ -155,10 +203,17 @@ export default function CalculatorPage() {
         const functionBody = hasStatements ? code : `return ${code}`;
         
         try {
+          // Verify that Math.js functions are in scope
+          if (!currentScope.sqrt && code.includes('sqrt')) {
+            console.warn('[Calculator] sqrt function not found in scope. Available functions:', Object.keys(currentScope).filter(k => typeof currentScope[k] === 'function'));
+          }
+          
           const func = new Function(...scopeKeys, functionBody);
           return func(...scopeValues);
         } catch (error: any) {
-          throw new Error(`JavaScript evaluation error: ${error.message}`);
+          // Provide more detailed error message
+          const availableFunctions = Object.keys(currentScope).filter(k => typeof currentScope[k] === 'function').join(', ');
+          throw new Error(`JavaScript evaluation error: ${error.message}. Available functions: ${availableFunctions}`);
         }
       };
 
