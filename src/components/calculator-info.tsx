@@ -10,7 +10,6 @@ import {
   Bookmark,
   Share2,
   DollarSign,
-  Smartphone,
   Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -52,6 +51,7 @@ interface Comment {
 export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
   const { user } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
   const [relatedCalculators, setRelatedCalculators] = useState<Calculator[]>([]);
   const [loadingRelated, setLoadingRelated] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
@@ -66,7 +66,6 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loadingComments, setLoadingComments] = useState(true);
   const [submittingComment, setSubmittingComment] = useState(false);
-  const { toast } = useToast();
 
   // Fetch related calculators from the same subcategory
   useEffect(() => {
@@ -251,6 +250,75 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
     }
   };
 
+  // Handle share functionality
+  const handleShare = async () => {
+    if (!calculator) return;
+
+    // Build the calculator URL
+    const calculatorUrl = `${window.location.origin}/calculators/${calculator.category_slug}/${calculator.slug}`;
+    const shareText = `Check out this ${calculator.name} calculator: ${calculatorUrl}`;
+    const shareTitle = calculator.name;
+
+    // Check if Web Share API is available (mobile devices)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: calculatorUrl,
+        });
+        toast({
+          title: "Shared successfully!",
+          description: "The calculator link has been shared.",
+        });
+      } catch (error: any) {
+        // User cancelled or error occurred
+        if (error.name !== 'AbortError') {
+          console.error('Error sharing:', error);
+          // Fall back to clipboard
+          await copyToClipboard(calculatorUrl);
+        }
+      }
+    } else {
+      // Fallback: Copy to clipboard
+      await copyToClipboard(calculatorUrl);
+    }
+  };
+
+  // Copy URL to clipboard
+  const copyToClipboard = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({
+        title: "Link copied!",
+        description: "The calculator link has been copied to your clipboard.",
+      });
+    } catch (error) {
+      console.error('Failed to copy:', error);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = url;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        toast({
+          title: "Link copied!",
+          description: "The calculator link has been copied to your clipboard.",
+        });
+      } catch (err) {
+        toast({
+          title: "Failed to copy",
+          description: "Please copy the link manually.",
+          variant: "destructive",
+        });
+      }
+      document.body.removeChild(textArea);
+    }
+  };
+
   const handleSubmitComment = async () => {
     if (!calculator || !comment.trim()) return;
 
@@ -301,7 +369,7 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
     <div className="max-w-4xl mx-auto">
       <Card className="w-full">
         <CardContent className="p-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-6">
             <Button 
               variant={isLiked ? "default" : "outline"} 
               onClick={handleLike}
@@ -310,21 +378,13 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
               <Heart className={`w-4 h-4 mr-2 ${isLiked ? 'fill-current' : ''}`} />
               {loadingLikes ? "Loading..." : `${isLiked ? "Liked" : "Like"} ${likeCount > 0 ? `(${likeCount})` : ''}`}
             </Button>
-            <Button asChild variant="outline">
-                <Link href="/get-app">
-                    <Smartphone className="w-4 h-4 mr-2" />
-                    Get App
-                </Link>
-            </Button>
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleShare}>
               <Share2 className="w-4 h-4 mr-2" />
               Share
             </Button>
-            <Button asChild variant="outline">
-                <Link href="/donate">
-                    <DollarSign className="w-4 h-4 mr-2" />
-                    Donate
-                </Link>
+            <Button variant="outline" disabled title="Coming Soon">
+                <DollarSign className="w-4 h-4 mr-2" />
+                Donate (Coming Soon)
             </Button>
           </div>
 

@@ -490,7 +490,7 @@ export function AdvancedCalculator() {
     return oldTypes[currentCalculator] || 'Basic Calculator';
   };
   
-  // Determine which calculators to show (reduce by 1 to make room for scientific calculator)
+  // Determine which calculators to show - show 7 from API (Basic + Scientific + 7 = 9 total cards)
   const calculatorsToShow = showAllCalculators ? featuredCalculators : featuredCalculators.slice(0, 7);
   const hasMoreCalculators = featuredCalculators.length > 7;
   const showMoreCard = hasMoreCalculators && !showAllCalculators;
@@ -521,14 +521,19 @@ export function AdvancedCalculator() {
 
   return (
     <Card className="w-full max-w-md mx-auto shadow-2xl overflow-hidden bg-card/80 backdrop-blur-sm border-white/20">
-      <CardContent className="p-2 max-h-[90vh] overflow-y-auto">
-        {renderCalculator()}
-        <div className="mt-4 p-2 bg-background/50 rounded-lg">
-          <h3 className="text-xs font-semibold text-muted-foreground mb-2 px-1">Most Used</h3>
-          <div className="grid grid-cols-3 gap-2">
+      <CardContent className="p-2 flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100vh - 4rem)', height: 'calc(100vh - 4rem)' }}>
+        {/* Calculator Section - Fixed height, no scroll */}
+        <div className="flex-shrink-0 overflow-hidden">
+          {renderCalculator()}
+        </div>
+        
+        {/* Most Used Calculators Section - Shows 9 cards (Basic + Scientific + 7 from API), then scrollable */}
+        <div className="mt-4 p-2 bg-background/50 rounded-lg flex-shrink-0 overflow-hidden flex flex-col min-h-0">
+          <h3 className="text-xs font-semibold text-muted-foreground mb-2 px-1 flex-shrink-0">Most Used</h3>
+          <div className="grid grid-cols-3 gap-2 overflow-y-auto overflow-x-hidden flex-1 min-h-0" style={{ maxHeight: '400px' }}>
             {loadingCalculators ? (
-              // Loading skeleton
-              Array.from({ length: 6 }).map((_, i) => (
+              // Loading skeleton - show 9 cards (Basic + Scientific + 7 from API)
+              Array.from({ length: 9 }).map((_, i) => (
                 <div
                   key={i}
                   className="flex flex-col items-center justify-center p-2 rounded-lg bg-muted/50 animate-pulse"
@@ -609,7 +614,7 @@ export function AdvancedCalculator() {
                   );
                 })}
 
-                {/* More Card - Show if there are more than 7 calculators */}
+                {/* More Card - Show if there are more than 7 calculators from API */}
                 {showMoreCard && (
                   <button
                     onClick={() => setShowAllCalculators(true)}
