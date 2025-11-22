@@ -35,11 +35,32 @@ export function PopularCalculators() {
         });
         
         const limitedData = Array.isArray(data) ? data.slice(0, 12) : [];
+        
+        // Debug: Log subtitle values for all calculators
+        console.log('[PopularCalculators] ========== SUBTITLE DEBUG ==========');
+        limitedData.forEach((calc, index) => {
+          console.log(`[PopularCalculators] Calculator ${index + 1} (${calc.name}):`, {
+            id: calc.id,
+            name: calc.name,
+            subtitle: calc.subtitle,
+            subtitleType: typeof calc.subtitle,
+            isNull: calc.subtitle === null,
+            isUndefined: calc.subtitle === undefined,
+            isEmpty: calc.subtitle === '',
+            trimmed: calc.subtitle ? calc.subtitle.trim() : 'N/A',
+            hasSubtitle: !!(calc.subtitle && calc.subtitle.trim()),
+            description: calc.description,
+            willShowSubtitle: !!(calc.subtitle && calc.subtitle.trim())
+          });
+        });
+        console.log('[PopularCalculators] ======================================');
+        
         setCalculators(limitedData);
         
         console.log('[PopularCalculators] Setting calculators:', {
           count: limitedData.length,
-          names: limitedData.map(c => c.name)
+          names: limitedData.map(c => c.name),
+          subtitles: limitedData.map(c => ({ name: c.name, subtitle: c.subtitle }))
         });
       } catch (error) {
         console.error('[PopularCalculators] Error fetching popular calculators:', {
@@ -101,6 +122,22 @@ export function PopularCalculators() {
         {calculators.map((calc) => {
           const IconComponent = getCategoryIcon(calc.category_slug) as LucideIcon;
           
+          // Debug: Log subtitle value for each calculator being rendered
+          const subtitleValue = calc.subtitle && calc.subtitle.trim() ? calc.subtitle : null;
+          const descriptionValue = calc.description && calc.description.trim() ? calc.description : null;
+          const displayText = subtitleValue || descriptionValue || 'No description available.';
+          
+          console.log(`[PopularCalculators] Rendering calculator "${calc.name}":`, {
+            id: calc.id,
+            subtitle: calc.subtitle,
+            subtitleType: typeof calc.subtitle,
+            subtitleValue: subtitleValue,
+            description: calc.description,
+            descriptionValue: descriptionValue,
+            displayText: displayText,
+            willShowSubtitle: !!subtitleValue
+          });
+          
           return (
             <Link 
               key={calc.id} 
@@ -120,8 +157,23 @@ export function PopularCalculators() {
                     </CardTitle>
                   </div>
                   <CardDescription className="text-sm leading-relaxed text-muted-foreground">
-                    {calc.subtitle && calc.subtitle.trim() ? calc.subtitle : (calc.description && calc.description.trim() ? calc.description : 'No description available.')}
+                    {displayText}
                   </CardDescription>
+                  {/* Debug info in development */}
+                  {process.env.NODE_ENV === 'development' && (
+                    <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded text-xs">
+                      <div className="font-semibold text-blue-700 dark:text-blue-300">Debug Info:</div>
+                      <div className="text-blue-600 dark:text-blue-400">
+                        Subtitle: {calc.subtitle ? `"${calc.subtitle}"` : 'null/empty'}
+                      </div>
+                      <div className="text-blue-600 dark:text-blue-400">
+                        Description: {calc.description ? `"${calc.description.substring(0, 50)}..."` : 'null/empty'}
+                      </div>
+                      <div className="text-blue-600 dark:text-blue-400">
+                        Displaying: {subtitleValue ? 'Subtitle' : descriptionValue ? 'Description' : 'Default'}
+                      </div>
+                    </div>
+                  )}
                 </CardHeader>
                 <CardContent className="pt-0 mt-auto">
                   <div className="flex items-center text-primary text-sm font-medium group-hover:gap-2 transition-all">
