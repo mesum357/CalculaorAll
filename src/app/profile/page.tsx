@@ -21,7 +21,9 @@ export default function ProfilePage() {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
     const [favoriteCalculators, setFavoriteCalculators] = useState<Calculator[]>([]);
+    const [recentlyViewedCalculators, setRecentlyViewedCalculators] = useState<Calculator[]>([]);
     const [loadingFavorites, setLoadingFavorites] = useState(true);
+    const [loadingRecentlyViewed, setLoadingRecentlyViewed] = useState(true);
 
     useEffect(() => {
         if (!authLoading) {
@@ -47,14 +49,54 @@ export default function ProfilePage() {
                 }
             };
 
+            // Fetch recently viewed calculators
+            const fetchRecentlyViewed = async () => {
+                try {
+                    setLoadingRecentlyViewed(true);
+                    const recentlyViewed = await api.calculatorInteractions.getRecentlyViewed();
+                    setRecentlyViewedCalculators(recentlyViewed);
+                } catch (error: any) {
+                    console.error('Error fetching recently viewed:', error);
+                    if (error.message !== 'Authentication required') {
+                        setRecentlyViewedCalculators([]);
+                    }
+                } finally {
+                    setLoadingRecentlyViewed(false);
+                }
+            };
+
             fetchFavorites();
+            fetchRecentlyViewed();
         }
     }, [user, authLoading, router]);
 
     const hasFavorites = favoriteCalculators.length > 0;
-    const hasHistory = false; // No history tracking implemented yet
+    const hasHistory = recentlyViewedCalculators.length > 0;
 
-    if (authLoading || loadingFavorites) {
+    // Helper function to format time ago
+    const formatTimeAgo = (dateString: string) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+        
+        if (diffInSeconds < 60) {
+            return 'Just now';
+        } else if (diffInSeconds < 3600) {
+            const minutes = Math.floor(diffInSeconds / 60);
+            return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+        } else if (diffInSeconds < 86400) {
+            const hours = Math.floor(diffInSeconds / 3600);
+            return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+        } else if (diffInSeconds < 604800) {
+            const days = Math.floor(diffInSeconds / 86400);
+            return `${days} day${days > 1 ? 's' : ''} ago`;
+        } else {
+            const weeks = Math.floor(diffInSeconds / 604800);
+            return `${weeks} week${weeks > 1 ? 's' : ''} ago`;
+        }
+    };
+
+    if (authLoading || loadingFavorites || loadingRecentlyViewed) {
         return (
             <div className="container mx-auto px-4 py-12">
                 <div className="animate-pulse space-y-8">
@@ -93,25 +135,34 @@ export default function ProfilePage() {
         </h2>
         {hasHistory ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {recentlyUsedCalculators.map((calc) => (
-                <Card key={calc.name} className="flex flex-col">
-                    <CardHeader>
-                        <div className="flex items-center gap-4">
-                             <calc.icon className="w-8 h-8 text-primary" />
-                             <CardTitle className="font-headline text-lg">{calc.name}</CardTitle>
-                        </div>
-                        <CardDescription className="pt-2 flex items-center gap-2 text-sm"><Clock className="w-4 h-4"/>{calc.description}</CardDescription>
-                    </CardHeader>
-                    <CardFooter className="mt-auto">
-                    <Button asChild variant="secondary" className="w-full">
-                        <Link href={calc.href}>
-                        Launch Again
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                        </Link>
-                    </Button>
-                    </CardFooter>
-                </Card>
-                ))}
+                {recentlyViewedCalculators.map((calc) => {
+                    const IconComponent = getCategoryIcon(calc.category_slug) as LucideIcon;
+                    const href = `/calculators/${calc.category_slug}/${calc.slug}`;
+                    const viewedAt = (calc as any).viewed_at || calc.updated_at;
+                    const timeAgo = viewedAt ? formatTimeAgo(viewedAt) : 'Recently';
+                    return (
+                    <Card key={calc.id} className="flex flex-col">
+                        <CardHeader>
+                            <div className="flex items-center gap-4">
+                                {IconComponent && <IconComponent className="w-8 h-8 text-primary" />}
+                                <CardTitle className="font-headline text-lg">{calc.name}</CardTitle>
+                            </div>
+                            <CardDescription className="pt-2 flex items-center gap-2 text-sm">
+                                <Clock className="w-4 h-4"/>
+                                Used {timeAgo}
+                            </CardDescription>
+                        </CardHeader>
+                        <CardFooter className="mt-auto">
+                        <Button asChild variant="secondary" className="w-full">
+                            <Link href={href}>
+                            Launch Again
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                            </Link>
+                        </Button>
+                        </CardFooter>
+                    </Card>
+                    );
+                })}
             </div>
         ) : (
              <div className="text-center py-12 bg-card rounded-lg">

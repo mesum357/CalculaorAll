@@ -10,10 +10,12 @@ import { AdvancedCalculator } from '@/components/advanced-calculator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/contexts/auth-context';
 
 export default function CalculatorPage() {
   const router = useRouter();
   const params = useParams();
+  const { user } = useAuth();
   const [calculator, setCalculator] = useState<Calculator | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -80,6 +82,16 @@ export default function CalculatorPage() {
           initialValues[inputName] = input.defaultValue?.toString() || '';
         });
         setInputValues(initialValues);
+
+        // Track view if user is authenticated
+        if (user && calc.id) {
+          try {
+            await api.calculatorInteractions.trackView(calc.id);
+          } catch (err) {
+            // Silently fail - view tracking is not critical
+            console.error('Error tracking view:', err);
+          }
+        }
       } catch (err) {
         console.error('Error fetching calculator:', err);
         setError('Failed to load calculator');
@@ -89,7 +101,7 @@ export default function CalculatorPage() {
     }
 
     fetchCalculator();
-  }, [categorySlug, calculatorSlug]);
+  }, [categorySlug, calculatorSlug, user]);
 
   const calculateResults = (values: Record<string, string>) => {
     if (!calculator || !calculator.results) return;

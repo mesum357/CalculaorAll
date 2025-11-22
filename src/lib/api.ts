@@ -275,6 +275,33 @@ export const api = {
       }
       return response.json();
     },
+    // Calculator views
+    trackView: async (calculatorId: number) => {
+      const response = await fetch(`${API_BASE_URL}/calculator-interactions/views/${calculatorId}`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        if (response.status === 401) {
+          // Silently fail if not authenticated
+          return;
+        }
+        throw new Error('Failed to track view');
+      }
+      return response.json();
+    },
+    getRecentlyViewed: async (): Promise<Calculator[]> => {
+      const response = await fetch(`${API_BASE_URL}/calculator-interactions/user/recently-viewed`, {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Authentication required');
+        }
+        throw new Error('Failed to fetch recently viewed');
+      }
+      return response.json();
+    },
   },
   auth: {
     register: async (email: string, password: string, name: string) => {
