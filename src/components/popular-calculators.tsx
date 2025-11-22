@@ -25,7 +25,13 @@ export function PopularCalculators() {
         console.log('[PopularCalculators] Fetch successful:', {
           totalReceived: Array.isArray(data) ? data.length : 'not an array',
           dataType: typeof data,
-          sampleData: Array.isArray(data) && data.length > 0 ? data[0] : 'no data'
+          sampleData: Array.isArray(data) && data.length > 0 ? {
+            id: data[0].id,
+            name: data[0].name,
+            subtitle: data[0].subtitle,
+            description: data[0].description,
+            hasSubtitle: !!data[0].subtitle
+          } : 'no data'
         });
         
         const limitedData = Array.isArray(data) ? data.slice(0, 12) : [];
@@ -114,7 +120,7 @@ export function PopularCalculators() {
                     </CardTitle>
                   </div>
                   <CardDescription className="text-sm leading-relaxed text-muted-foreground">
-                    {calc.subtitle || 'No description available.'}
+                    {calc.subtitle && calc.subtitle.trim() ? calc.subtitle : (calc.description && calc.description.trim() ? calc.description : 'No description available.')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0 mt-auto">

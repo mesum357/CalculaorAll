@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Delete, Sigma, LineChart, Landmark, BarChart3, FunctionSquare, Triangle, ArrowRightLeft, DollarSign, Binary, Pi, SquareRadical, Calculator } from 'lucide-react';
+import { Delete, Sigma, LineChart, Landmark, BarChart3, FunctionSquare, Triangle, ArrowRightLeft, DollarSign, Binary, Pi, SquareRadical, Calculator, Beaker } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScientificCalculator } from '@/components/calculators/scientific-calculator';
@@ -490,14 +490,23 @@ export function AdvancedCalculator() {
     return oldTypes[currentCalculator] || 'Basic Calculator';
   };
   
-  // Determine which calculators to show
-  const calculatorsToShow = showAllCalculators ? featuredCalculators : featuredCalculators.slice(0, 8);
-  const hasMoreCalculators = featuredCalculators.length > 8;
+  // Determine which calculators to show (reduce by 1 to make room for scientific calculator)
+  const calculatorsToShow = showAllCalculators ? featuredCalculators : featuredCalculators.slice(0, 7);
+  const hasMoreCalculators = featuredCalculators.length > 7;
   const showMoreCard = hasMoreCalculators && !showAllCalculators;
 
   // Handle basic calculator click
   const handleBasicCalculatorClick = () => {
     setCurrentCalculator('basic');
+    setSelectedCalculator(null);
+    setCalculatorInputs({});
+    setCalculatorResults({});
+    setShowAllCalculators(false);
+  };
+
+  // Handle scientific calculator click
+  const handleScientificCalculatorClick = () => {
+    setCurrentCalculator('scientific');
     setSelectedCalculator(null);
     setCalculatorInputs({});
     setCalculatorResults({});
@@ -551,6 +560,27 @@ export function AdvancedCalculator() {
                   )}>Basic</span>
                 </button>
 
+                {/* Scientific Calculator Card - Always second and active when scientific calculator is selected */}
+                <button
+                  onClick={handleScientificCalculatorClick}
+                  className={cn(
+                    "cursor-pointer flex flex-col items-center justify-center p-2 rounded-lg hover:bg-accent/80 text-center transition-colors h-full group",
+                    currentCalculator === 'scientific' && !selectedCalculator && "bg-accent"
+                  )}
+                  title="Scientific Calculator"
+                >
+                  <Beaker className={cn(
+                    "h-5 w-5 mb-1 text-primary group-hover:scale-110 transition-all",
+                    "group-hover:text-white",
+                    currentCalculator === 'scientific' && !selectedCalculator && "text-white"
+                  )}/>
+                  <span className={cn(
+                    "text-xs font-medium line-clamp-2 text-foreground",
+                    "group-hover:text-white",
+                    currentCalculator === 'scientific' && !selectedCalculator && "text-white"
+                  )}>Scientific</span>
+                </button>
+
                 {/* Featured Calculators */}
                 {calculatorsToShow.map((calc) => {
                   const Icon = getCategoryIcon(calc.category_name);
@@ -579,7 +609,7 @@ export function AdvancedCalculator() {
                   );
                 })}
 
-                {/* More Card - Show if there are more than 8 calculators */}
+                {/* More Card - Show if there are more than 7 calculators */}
                 {showMoreCard && (
                   <button
                     onClick={() => setShowAllCalculators(true)}
@@ -590,7 +620,7 @@ export function AdvancedCalculator() {
                       <span className="text-lg font-bold">+</span>
                     </div>
                     <span className="text-xs font-medium line-clamp-2 text-muted-foreground group-hover:text-primary">
-                      More ({featuredCalculators.length - 8})
+                      More ({featuredCalculators.length - 7})
                     </span>
                   </button>
                 )}
