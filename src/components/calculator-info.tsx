@@ -29,6 +29,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api, type Calculator } from '@/lib/api';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
@@ -368,44 +369,56 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Sidebar with Description */}
-        <div className="lg:col-span-1">
-          <Card className="w-full sticky top-4">
-            <CardHeader>
-              <CardTitle>About</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <RichTextRenderer content={calculator?.description || null} />
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Main Content with Rate & Comments */}
-        <div className="lg:col-span-2">
-          <Card className="w-full">
-            <CardContent className="p-6">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-6">
-                <Button 
-                  variant={isLiked ? "default" : "outline"} 
-                  onClick={handleLike}
-                  disabled={loadingLikes}
-                >
-                  <Heart className={`w-4 h-4 mr-2 ${isLiked ? 'fill-current' : ''}`} />
-                  {loadingLikes ? "Loading..." : `${isLiked ? "Liked" : "Like"} ${likeCount > 0 ? `(${likeCount})` : ''}`}
-                </Button>
-                <Button variant="outline" onClick={handleShare}>
-                  <Share2 className="w-4 h-4 mr-2" />
-                  Share
-                </Button>
-                <Button variant="outline" disabled title="Coming Soon">
-                    <DollarSign className="w-4 h-4 mr-2" />
-                    Donate (Coming Soon)
-                </Button>
+    <div className="max-w-4xl mx-auto">
+      <Card className="w-full">
+        <CardContent className="p-6">
+          <Tabs defaultValue="like" className="w-full">
+            <TabsList className="mb-6 grid w-full grid-cols-5">
+              <TabsTrigger value="like">
+                <Heart className={`w-4 h-4 mr-2 ${isLiked ? 'fill-current' : ''}`} />
+                Like {likeCount > 0 ? `(${likeCount})` : ''}
+              </TabsTrigger>
+              <TabsTrigger value="about">About</TabsTrigger>
+              <TabsTrigger value="reviews">Reviews & Comments</TabsTrigger>
+              <TabsTrigger value="share">
+                <Share2 className="w-4 h-4 mr-2" />
+                Share
+              </TabsTrigger>
+              <TabsTrigger value="donate" disabled>
+                <DollarSign className="w-4 h-4 mr-2" />
+                Donate
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="like" className="mt-0">
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <Button 
+                    variant={isLiked ? "default" : "outline"} 
+                    onClick={handleLike}
+                    disabled={loadingLikes}
+                    size="lg"
+                  >
+                    <Heart className={`w-5 h-5 mr-2 ${isLiked ? 'fill-current' : ''}`} />
+                    {loadingLikes ? "Loading..." : isLiked ? "Liked" : "Like This Calculator"}
+                  </Button>
+                  {likeCount > 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      {likeCount} {likeCount === 1 ? 'person likes' : 'people like'} this calculator
+                    </p>
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Show your appreciation for this calculator by liking it. Liked calculators appear in your profile.
+                </p>
               </div>
-
-              <div className="pt-4">
+            </TabsContent>
+            
+            <TabsContent value="about" className="mt-0">
+              <RichTextRenderer content={calculator?.description || null} />
+            </TabsContent>
+            
+            <TabsContent value="reviews" className="mt-0">
               <div className="space-y-6">
                 {/* Rating Section */}
                 <div className="space-y-4">
@@ -486,11 +499,42 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
                   )}
                 </div>
               </div>
+            </TabsContent>
+            
+            <TabsContent value="share" className="mt-0">
+              <div className="space-y-4">
+                <Button 
+                  variant="outline" 
+                  onClick={handleShare}
+                  size="lg"
+                >
+                  <Share2 className="w-5 h-5 mr-2" />
+                  Share This Calculator
+                </Button>
+                <p className="text-sm text-muted-foreground">
+                  Share this calculator with others. You can copy the link or use your device's share functionality.
+                </p>
               </div>
-          </CardContent>
-        </Card>
-      </div>
-      </div>
+            </TabsContent>
+            
+            <TabsContent value="donate" className="mt-0">
+              <div className="space-y-4">
+                <Button 
+                  variant="outline" 
+                  disabled
+                  size="lg"
+                >
+                  <DollarSign className="w-5 h-5 mr-2" />
+                  Donate (Coming Soon)
+                </Button>
+                <p className="text-sm text-muted-foreground">
+                  Donation functionality will be available soon. Thank you for your interest in supporting us!
+                </p>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
 
       <div className="mt-8">
         <h2 className="text-2xl font-bold mb-4">Related Calculators</h2>

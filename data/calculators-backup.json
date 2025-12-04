@@ -1,7 +1,7 @@
 {
   "version": "1.0",
-  "last_updated": "2025-12-04T00:33:34.938Z",
-  "total_calculators": 167,
+  "last_updated": "2025-12-04T20:09:34.069Z",
+  "total_calculators": 168,
   "calculators": [
     {
       "name": "401k Calculator",
@@ -6632,6 +6632,37 @@
       "most_used": false,
       "likes": 0,
       "popular": false
+    },
+    {
+      "name": "Sardar",
+      "slug": "sardar",
+      "description": "<h1>Hello World</h1>\n<p>Hello <a href=\"There\">There</a></p>\n<img style=\"width:10px\" src=\"https://picsum.photos/200/300\" alt=\"Random Image\">\n<ul>\n    <li>Item 1</li>\n    <li>Item 2</li>\n    <li>Item 3</li>\n</ul>\n<ol>\n    <li>Item 1</li>\n    <li>Item 2</li>\n    <li>Item 3</li>\n</ol>\n<table>",
+      "href": null,
+      "is_active": true,
+      "category": "Conversion",
+      "subcategory": "Number converters",
+      "subtitle": "Hellop There",
+      "inputs": [
+        {
+          "key": "loan",
+          "type": "number",
+          "label": "loan",
+          "order": 0,
+          "required": true
+        }
+      ],
+      "results": [
+        {
+          "key": "loan",
+          "label": "Loan",
+          "format": "number",
+          "formula": "loan * 1000"
+        }
+      ],
+      "tags": [],
+      "most_used": false,
+      "likes": 1,
+      "popular": true
     },
     {
       "name": "Savings Goal Calculator",

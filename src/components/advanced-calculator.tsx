@@ -330,14 +330,14 @@ export function AdvancedCalculator() {
   return (
     <div className="w-full max-w-sm mx-auto">
       <div className={cn(
-        'rounded-3xl overflow-hidden shadow-2xl border',
+        'rounded-3xl overflow-hidden shadow-2xl border transition-all duration-300 ease-in-out',
         isDark 
           ? 'bg-[#1a1a1a] border-border' 
           : 'bg-white border-border'
       )}>
         {/* Display Area */}
         <div className={cn(
-          'px-6 py-6 min-h-[140px] flex flex-col justify-end',
+          'px-6 py-6 min-h-[140px] flex flex-col justify-end transition-all duration-300 ease-in-out',
           isDark ? 'bg-[#1a1a1a]' : 'bg-white'
         )}>
           <div className="text-right">
@@ -356,11 +356,11 @@ export function AdvancedCalculator() {
         </div>
 
         {/* Mode Toggle */}
-        <div className="px-4 pb-2 flex gap-2">
+        <div className="px-4 pb-2 flex gap-2 transition-all duration-300 ease-in-out">
           <button
             onClick={() => setMode('basic')}
             className={cn(
-              'flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2',
+              'flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-300 ease-in-out flex items-center justify-center gap-2',
               mode === 'basic'
                 ? 'bg-primary text-primary-foreground'
                 : isDark
@@ -374,7 +374,7 @@ export function AdvancedCalculator() {
           <button
             onClick={() => setMode('scientific')}
             className={cn(
-              'flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2',
+              'flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-300 ease-in-out flex items-center justify-center gap-2',
               mode === 'scientific'
                 ? 'bg-primary text-primary-foreground'
                 : isDark
@@ -389,14 +389,14 @@ export function AdvancedCalculator() {
 
         {/* Button Grid */}
         <div className={cn(
-          'pb-6',
-          mode === 'basic' ? 'p-2' : 'p-1.5'
+          'transition-all duration-300 ease-in-out',
+          mode === 'basic' ? 'p-2 pb-6' : 'p-1.5 pb-5'
         )}>
           <div className={cn(
-            'grid',
+            'grid transition-all duration-300 ease-in-out',
             mode === 'basic' 
               ? 'grid-cols-4 gap-2' 
-              : 'grid-cols-4 gap-1.5'
+              : 'grid-cols-4 gap-1'
           )}>
             {buttons.map((btn, index) => {
               if (btn.type === 'empty') {
@@ -420,7 +420,7 @@ export function AdvancedCalculator() {
                     'active:scale-95 focus:outline-none',
                     mode === 'basic'
                       ? 'h-16 text-2xl'
-                      : 'h-12 text-lg',
+                      : 'h-10 text-sm',
                     getButtonClassName(btn.type, btn.value),
                     span === 2 && 'col-span-2',
                     span === 4 && 'col-span-4'

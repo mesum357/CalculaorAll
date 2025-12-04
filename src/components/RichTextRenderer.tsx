@@ -9,6 +9,30 @@ export function RichTextRenderer({ content }: { content: string | null | undefin
     return <p className="text-muted-foreground">No description available for this calculator.</p>;
   }
 
+  // Check if content is HTML (contains HTML tags)
+  const isHTML = /<[a-z][\s\S]*>/i.test(content);
+  
+  if (isHTML) {
+    // Render HTML directly with support for inline and internal CSS
+    // Extract style tag if present and inject it
+    const styleMatch = content.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
+    const styleContent = styleMatch ? styleMatch[1] : null;
+    const htmlContent = content.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
+    
+    return (
+      <>
+        {styleContent && (
+          <style dangerouslySetInnerHTML={{ __html: styleContent }} />
+        )}
+        <div 
+          className="prose dark:prose-invert max-w-none calculator-description"
+          dangerouslySetInnerHTML={{ __html: htmlContent }}
+        />
+      </>
+    );
+  }
+
+  // Legacy JSON block format support (for backward compatibility)
   let blocks: ContentBlock[] = [];
   
   try {
@@ -44,17 +68,17 @@ export function RichTextRenderer({ content }: { content: string | null | undefin
           );
         }
         
-        const content = block.content || '';
+        const blockContent = block.content || '';
         switch (block.type) {
           case 'heading1':
-            return <h1 key={index} className="text-3xl font-bold mt-6 mb-4">{content}</h1>;
+            return <h1 key={index} className="text-3xl font-bold mt-6 mb-4">{blockContent}</h1>;
           case 'heading2':
-            return <h2 key={index} className="text-2xl font-semibold mt-5 mb-3">{content}</h2>;
+            return <h2 key={index} className="text-2xl font-semibold mt-5 mb-3">{blockContent}</h2>;
           case 'heading3':
-            return <h3 key={index} className="text-xl font-medium mt-4 mb-2">{content}</h3>;
+            return <h3 key={index} className="text-xl font-medium mt-4 mb-2">{blockContent}</h3>;
           case 'paragraph':
           default:
-            return <p key={index} className="text-sm text-muted-foreground whitespace-pre-line">{content}</p>;
+            return <p key={index} className="text-sm text-muted-foreground whitespace-pre-line">{blockContent}</p>;
         }
       })}
     </div>
