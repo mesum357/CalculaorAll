@@ -42,8 +42,8 @@ export function CategoryNavigation() {
 
   if (loading) {
     return (
-      <div className="mt-16">
-        <h2 className="text-3xl font-bold text-center font-headline mb-8">
+      <div>
+        <h2 className="text-3xl font-bold text-center font-headline mb-4">
           Browse by Category
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -56,8 +56,8 @@ export function CategoryNavigation() {
   }
 
   return (
-    <div className="mt-16">
-      <h2 className="text-3xl font-bold text-center font-headline mb-8">
+    <div>
+      <h2 className="text-3xl font-bold text-center font-headline mb-6">
         Browse by Category
       </h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">

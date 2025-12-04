@@ -50,7 +50,7 @@ export default function Home() {
   return (
     <div className="flex flex-col items-center">
       {/* Hero Section */}
-      <section className="w-full py-16 md:py-24 lg:py-32 bg-gradient-to-b from-white to-background dark:from-card dark:to-background">
+      <section className="w-full py-8 md:py-14 lg:py-16 bg-gradient-to-b from-white to-background dark:from-card dark:to-background">
         <div className="container grid grid-cols-1 lg:grid-cols-2 gap-12 items-center px-4 md:px-6">
           <div className="text-center lg:text-left">
             <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl/none font-headline">
@@ -98,14 +98,14 @@ export default function Home() {
       </section>
 
       {/* Navigation + Search Section */}
-      <section id="categories" className="w-full py-16 md:py-24 bg-background">
+      <section id="categories" className="w-full py-8 md:py-12 bg-background">
         <div className="container px-4 md:px-6">
           <CategoryNavigation />
         </div>
       </section>
 
       {/* Popular Calculators Section */}
-      <section className="w-full py-16 md:py-24 bg-background">
+      <section className="w-full py-8 md:py-12 bg-background">
         <div className="container px-4 md:px-6">
           <PopularCalculators />
         </div>

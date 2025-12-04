@@ -342,7 +342,8 @@ export function AdvancedCalculator() {
         )}>
           <div className="text-right">
             <div className={cn(
-              'text-5xl font-light mb-2 break-all leading-tight overflow-x-auto',
+              // Removed horizontal scroll to avoid showing a scrollbar/slider in the result area
+              'text-5xl font-light mb-2 break-all leading-tight',
               isDark ? 'text-white' : 'text-foreground'
             )}>
               {display.length > 12 ? (
