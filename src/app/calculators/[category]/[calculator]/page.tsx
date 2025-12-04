@@ -253,6 +253,225 @@ export default function CalculatorPage() {
           };
           return Math.abs(a * b) / (gcdFunc(a, b) || 1);
         },
+        // Punnett Square functions
+        compute_punnett: (parent1: string, parent2: string) => {
+          // Monohybrid cross (e.g., Aa x Aa)
+          const normalizeGenotype = (genotype: string) => {
+            return String(genotype || '').trim().replace(/\s+/g, '');
+          };
+          
+          const p1 = normalizeGenotype(parent1);
+          const p2 = normalizeGenotype(parent2);
+          
+          if (!p1 || !p2) return 'Invalid genotype';
+          
+          // Extract alleles (assume single letter alleles like A, a)
+          const getAlleles = (genotype: string) => {
+            const alleles: string[] = [];
+            for (let i = 0; i < genotype.length; i++) {
+              const char = genotype[i];
+              if (/[A-Za-z]/.test(char)) {
+                alleles.push(char);
+              }
+            }
+            return alleles.length === 2 ? alleles : [genotype[0] || 'A', genotype[1] || 'a'];
+          };
+          
+          const p1Alleles = getAlleles(p1);
+          const p2Alleles = getAlleles(p2);
+          
+          // Generate gametes
+          const p1Gametes = [...new Set(p1Alleles)];
+          const p2Gametes = [...new Set(p2Alleles)];
+          
+          // Calculate offspring genotypes and probabilities
+          const outcomes: Record<string, number> = {};
+          let total = 0;
+          
+          for (const g1 of p1Gametes) {
+            for (const g2 of p2Gametes) {
+              // Sort alleles to normalize genotype (Aa = aA)
+              const genotype = [g1, g2].sort().join('');
+              outcomes[genotype] = (outcomes[genotype] || 0) + 1;
+              total++;
+            }
+          }
+          
+          // Format results
+          const results: string[] = [];
+          for (const [genotype, count] of Object.entries(outcomes)) {
+            const probability = (count / total) * 100;
+            results.push(`${genotype}: ${probability.toFixed(1)}%`);
+          }
+          
+          return results.join(', ');
+        },
+        compute_dihybrid_punnett: (parent1_genotype: string, parent2_genotype: string) => {
+          // Dihybrid cross (e.g., AaBb x AaBb)
+          const normalizeGenotype = (genotype: string) => {
+            return String(genotype || '').trim().replace(/\s+/g, '');
+          };
+          
+          const p1 = normalizeGenotype(parent1_genotype);
+          const p2 = normalizeGenotype(parent2_genotype);
+          
+          if (!p1 || !p2) return 'Invalid genotype';
+          
+          // Parse dihybrid genotype (e.g., AaBb -> [A,a] and [B,b])
+          const parseDihybrid = (genotype: string) => {
+            const upper = genotype.match(/[A-Z]/g) || [];
+            const lower = genotype.match(/[a-z]/g) || [];
+            const pairs: string[][] = [];
+            
+            // Try to pair uppercase with lowercase
+            for (let i = 0; i < Math.max(upper.length, lower.length); i++) {
+              const u = upper[i] || '';
+              const l = lower[i] || '';
+              if (u && l) {
+                pairs.push([u, l]);
+              }
+            }
+            
+            // If we can't pair, try to extract pairs of 2
+            if (pairs.length === 0 && genotype.length >= 4) {
+              for (let i = 0; i < genotype.length; i += 2) {
+                const pair = genotype.slice(i, i + 2);
+                if (pair.length === 2) {
+                  pairs.push([pair[0], pair[1]]);
+                }
+              }
+            }
+            
+            return pairs.length >= 2 ? pairs : [[genotype[0] || 'A', genotype[1] || 'a'], [genotype[2] || 'B', genotype[3] || 'b']];
+          };
+          
+          const p1Pairs = parseDihybrid(p1);
+          const p2Pairs = parseDihybrid(p2);
+          
+          if (p1Pairs.length < 2 || p2Pairs.length < 2) return 'Invalid dihybrid genotype';
+          
+          // Generate gametes (4 possible combinations for each parent)
+          const getGametes = (pairs: string[][]) => {
+            const gametes: string[] = [];
+            const [pair1, pair2] = pairs;
+            for (const a1 of pair1) {
+              for (const a2 of pair2) {
+                gametes.push(a1 + a2);
+              }
+            }
+            return gametes;
+          };
+          
+          const p1Gametes = getGametes(p1Pairs);
+          const p2Gametes = getGametes(p2Pairs);
+          
+          // Calculate offspring genotypes
+          const outcomes: Record<string, number> = {};
+          let total = 0;
+          
+          for (const g1 of p1Gametes) {
+            for (const g2 of p2Gametes) {
+              // Combine gametes to form genotype
+              const genotype = g1 + g2;
+              outcomes[genotype] = (outcomes[genotype] || 0) + 1;
+              total++;
+            }
+          }
+          
+          // Format results (show unique genotypes with probabilities)
+          const results: string[] = [];
+          for (const [genotype, count] of Object.entries(outcomes)) {
+            const probability = (count / total) * 100;
+            results.push(`${genotype}: ${probability.toFixed(1)}%`);
+          }
+          
+          return results.join(', ');
+        },
+        compute_trihybrid_punnett: (parent1_genotype: string, parent2_genotype: string) => {
+          // Trihybrid cross (e.g., AaBbCc x AaBbCc)
+          const normalizeGenotype = (genotype: string) => {
+            return String(genotype || '').trim().replace(/\s+/g, '');
+          };
+          
+          const p1 = normalizeGenotype(parent1_genotype);
+          const p2 = normalizeGenotype(parent2_genotype);
+          
+          if (!p1 || !p2) return 'Invalid genotype';
+          
+          // Parse trihybrid genotype (e.g., AaBbCc -> [A,a], [B,b], [C,c])
+          const parseTrihybrid = (genotype: string) => {
+            const pairs: string[][] = [];
+            
+            // Try to extract pairs of 2
+            for (let i = 0; i < genotype.length; i += 2) {
+              const pair = genotype.slice(i, i + 2);
+              if (pair.length === 2) {
+                pairs.push([pair[0], pair[1]]);
+              }
+            }
+            
+            // If we don't have 3 pairs, try to infer
+            if (pairs.length < 3 && genotype.length >= 6) {
+              pairs.length = 0;
+              for (let i = 0; i < 6; i += 2) {
+                const pair = genotype.slice(i, i + 2);
+                if (pair.length === 2) {
+                  pairs.push([pair[0], pair[1]]);
+                }
+              }
+            }
+            
+            return pairs.length >= 3 ? pairs : [
+              [genotype[0] || 'A', genotype[1] || 'a'],
+              [genotype[2] || 'B', genotype[3] || 'b'],
+              [genotype[4] || 'C', genotype[5] || 'c']
+            ];
+          };
+          
+          const p1Pairs = parseTrihybrid(p1);
+          const p2Pairs = parseTrihybrid(p2);
+          
+          if (p1Pairs.length < 3 || p2Pairs.length < 3) return 'Invalid trihybrid genotype';
+          
+          // Generate gametes (8 possible combinations for each parent)
+          const getGametes = (pairs: string[][]) => {
+            const gametes: string[] = [];
+            const [pair1, pair2, pair3] = pairs;
+            for (const a1 of pair1) {
+              for (const a2 of pair2) {
+                for (const a3 of pair3) {
+                  gametes.push(a1 + a2 + a3);
+                }
+              }
+            }
+            return gametes;
+          };
+          
+          const p1Gametes = getGametes(p1Pairs);
+          const p2Gametes = getGametes(p2Pairs);
+          
+          // Calculate offspring genotypes
+          const outcomes: Record<string, number> = {};
+          let total = 0;
+          
+          for (const g1 of p1Gametes) {
+            for (const g2 of p2Gametes) {
+              // Combine gametes to form genotype
+              const genotype = g1 + g2;
+              outcomes[genotype] = (outcomes[genotype] || 0) + 1;
+              total++;
+            }
+          }
+          
+          // Format results (show unique genotypes with probabilities)
+          const results: string[] = [];
+          for (const [genotype, count] of Object.entries(outcomes)) {
+            const probability = (count / total) * 100;
+            results.push(`${genotype}: ${probability.toFixed(1)}%`);
+          }
+          
+          return results.join(', ');
+        },
       };
       const computed: Record<string, any> = {};
 

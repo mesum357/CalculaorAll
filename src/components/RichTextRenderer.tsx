@@ -24,8 +24,78 @@ export function RichTextRenderer({ content }: { content: string | null | undefin
         {styleContent && (
           <style dangerouslySetInnerHTML={{ __html: styleContent }} />
         )}
+        <style dangerouslySetInnerHTML={{ __html: `
+          .calculator-description h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            color: hsl(var(--foreground));
+          }
+          .calculator-description h2 {
+            font-size: 1.875rem;
+            font-weight: 600;
+            line-height: 1.3;
+            margin-top: 1.25rem;
+            margin-bottom: 0.75rem;
+            color: hsl(var(--foreground));
+          }
+          .calculator-description h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            color: hsl(var(--foreground));
+          }
+          .calculator-description h4 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-top: 0.75rem;
+            margin-bottom: 0.5rem;
+            color: hsl(var(--foreground));
+          }
+          .calculator-description h5 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-top: 0.75rem;
+            margin-bottom: 0.5rem;
+            color: hsl(var(--foreground));
+          }
+          .calculator-description h6 {
+            font-size: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-top: 0.75rem;
+            margin-bottom: 0.5rem;
+            color: hsl(var(--foreground));
+          }
+          .calculator-description p {
+            margin-top: 0.75rem;
+            margin-bottom: 0.75rem;
+            color: hsl(var(--foreground));
+          }
+          .calculator-description ul, .calculator-description ol {
+            margin-top: 0.75rem;
+            margin-bottom: 0.75rem;
+            padding-left: 1.5rem;
+          }
+          .calculator-description li {
+            margin-top: 0.25rem;
+            margin-bottom: 0.25rem;
+          }
+          .calculator-description strong {
+            font-weight: 600;
+          }
+          .calculator-description em {
+            font-style: italic;
+          }
+        ` }} />
         <div 
-          className="prose dark:prose-invert max-w-none calculator-description"
+          className="calculator-description"
           dangerouslySetInnerHTML={{ __html: htmlContent }}
         />
       </>
