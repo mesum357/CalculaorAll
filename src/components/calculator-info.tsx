@@ -372,12 +372,8 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
     <div className="max-w-4xl mx-auto">
       <Card className="w-full">
         <CardContent className="p-6">
-          <Tabs defaultValue="like" className="w-full">
-            <TabsList className="mb-6 grid w-full grid-cols-5">
-              <TabsTrigger value="like">
-                <Heart className={`w-4 h-4 mr-2 ${isLiked ? 'fill-current' : ''}`} />
-                Like {likeCount > 0 ? `(${likeCount})` : ''}
-              </TabsTrigger>
+          <Tabs defaultValue="about" className="w-full">
+            <TabsList className="mb-6 grid w-full grid-cols-4">
               <TabsTrigger value="about">About</TabsTrigger>
               <TabsTrigger value="reviews">Reviews & Comments</TabsTrigger>
               <TabsTrigger value="share">
@@ -389,30 +385,6 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
                 Donate
               </TabsTrigger>
             </TabsList>
-            
-            <TabsContent value="like" className="mt-0">
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <Button 
-                    variant={isLiked ? "default" : "outline"} 
-                    onClick={handleLike}
-                    disabled={loadingLikes}
-                    size="lg"
-                  >
-                    <Heart className={`w-5 h-5 mr-2 ${isLiked ? 'fill-current' : ''}`} />
-                    {loadingLikes ? "Loading..." : isLiked ? "Liked" : "Like This Calculator"}
-                  </Button>
-                  {likeCount > 0 && (
-                    <p className="text-sm text-muted-foreground">
-                      {likeCount} {likeCount === 1 ? 'person likes' : 'people like'} this calculator
-                    </p>
-                  )}
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Show your appreciation for this calculator by liking it. Liked calculators appear in your profile.
-                </p>
-              </div>
-            </TabsContent>
             
             <TabsContent value="about" className="mt-0">
               <RichTextRenderer content={calculator?.description || null} />

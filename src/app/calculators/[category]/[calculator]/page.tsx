@@ -4,23 +4,28 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { api, type Calculator } from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Heart } from 'lucide-react';
 import { CalculatorInfo } from '@/components/calculator-info';
 import { AdvancedCalculator } from '@/components/advanced-calculator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/auth-context';
+import { useToast } from '@/hooks/use-toast';
 
 export default function CalculatorPage() {
   const router = useRouter();
   const params = useParams();
   const { user } = useAuth();
+  const { toast } = useToast();
   const [calculator, setCalculator] = useState<Calculator | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [inputValues, setInputValues] = useState<Record<string, string>>({});
   const [results, setResults] = useState<Record<string, any>>({});
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [loadingLikes, setLoadingLikes] = useState(true);
 
   const categorySlug = params?.category as string;
   const calculatorSlug = params?.calculator as string;
@@ -92,9 +97,25 @@ export default function CalculatorPage() {
             console.error('Error tracking view:', err);
           }
         }
+
+        // Fetch likes
+        if (calc.id) {
+          try {
+            const likesData = await api.calculatorInteractions.getLikes(calc.id);
+            setIsLiked(likesData.isLiked);
+            setLikeCount(likesData.likeCount);
+          } catch (err) {
+            console.error('Error fetching likes:', err);
+          } finally {
+            setLoadingLikes(false);
+          }
+        } else {
+          setLoadingLikes(false);
+        }
       } catch (err) {
         console.error('Error fetching calculator:', err);
         setError('Failed to load calculator');
+        setLoadingLikes(false);
       } finally {
         setLoading(false);
       }
@@ -102,6 +123,51 @@ export default function CalculatorPage() {
 
     fetchCalculator();
   }, [categorySlug, calculatorSlug, user]);
+
+  const handleLike = async () => {
+    if (!calculator) return;
+
+    // Check authentication
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to like calculators.",
+        variant: "destructive",
+      });
+      router.push('/auth');
+      return;
+    }
+
+    try {
+      const data = await api.calculatorInteractions.toggleLike(calculator.id);
+      setIsLiked(data.liked);
+      
+      // Refresh like count
+      const likesData = await api.calculatorInteractions.getLikes(calculator.id);
+      setLikeCount(likesData.likeCount);
+
+      toast({
+        title: data.liked ? "Added to favorites!" : "Removed from favorites",
+        description: data.liked ? "You can find it in your profile." : "",
+      });
+    } catch (error: any) {
+      console.error('Error toggling like:', error);
+      if (error.message && error.message.includes('Authentication required')) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to like calculators.",
+          variant: "destructive",
+        });
+        router.push('/auth');
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to update like. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
 
   const calculateResults = (values: Record<string, string>) => {
     if (!calculator || !calculator.results) return;
@@ -389,6 +455,18 @@ export default function CalculatorPage() {
         </Button>
         <div className="flex-1 text-center">
           <h1 className="text-2xl md:text-3xl font-bold font-headline">{calculator.name}</h1>
+        </div>
+        <div className="absolute right-4 top-1/2 -translate-y-1/2">
+          <Button 
+            variant={isLiked ? "default" : "outline"} 
+            onClick={handleLike}
+            disabled={loadingLikes}
+            size="sm"
+          >
+            <Heart className={`w-4 h-4 mr-2 ${isLiked ? 'fill-current' : ''}`} />
+            {loadingLikes ? "..." : isLiked ? "Liked" : "Like"}
+            {likeCount > 0 && ` (${likeCount})`}
+          </Button>
         </div>
       </div>
 
