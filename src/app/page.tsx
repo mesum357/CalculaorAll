@@ -59,8 +59,11 @@ export default function Home() {
               <span className="text-primary">You Need</span>—One Click Away
             </h1>
             <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl mt-6">
-              Over 3,700 free calculators. From algebra to finance, we've got
-              you covered.
+              Over 3,700 free calculators covering everything from algebra and calculus to finance, 
+              health, construction, and everyday calculations. Whether you're solving complex equations, 
+              planning your budget, calculating loan payments, or converting units, we've got the perfect 
+              tool for you. All calculators are completely free, easy to use, and work instantly—no downloads 
+              or sign-ups required. Start calculating now and get accurate results in seconds.
             </p>
             {/* <div className="mt-8 max-w-lg mx-auto lg:mx-0">
               <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
