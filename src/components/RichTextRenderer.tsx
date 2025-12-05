@@ -93,6 +93,20 @@ export function RichTextRenderer({ content }: { content: string | null | undefin
           .calculator-description em {
             font-style: italic;
           }
+          /* Preserve inline styles for font-family, font-size, color, and background-color */
+          .calculator-description [style*="font-family"],
+          .calculator-description [style*="fontFamily"],
+          .calculator-description [style*="font-size"],
+          .calculator-description [style*="fontSize"],
+          .calculator-description [style*="color"],
+          .calculator-description [style*="background-color"],
+          .calculator-description [style*="backgroundColor"] {
+            /* Inline styles are preserved automatically via dangerouslySetInnerHTML */
+          }
+          /* Ensure span elements with inline styles are preserved */
+          .calculator-description span[style] {
+            display: inline;
+          }
         ` }} />
         <div 
           className="calculator-description"

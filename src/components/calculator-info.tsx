@@ -34,6 +34,7 @@ import { api, type Calculator } from '@/lib/api';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { RichTextRenderer } from '@/components/RichTextRenderer';
+import { cn } from '@/lib/utils';
 
 interface CalculatorInfoProps {
   calculator: Calculator | null;
@@ -396,10 +397,16 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
             <TabsList className="mb-6 grid w-full grid-cols-4">
               <TabsTrigger value="about">About</TabsTrigger>
               <TabsTrigger value="reviews">Reviews & Comments</TabsTrigger>
-              <TabsTrigger value="share">
+              <button
+                type="button"
+                onClick={handleShare}
+                className={cn(
+                  "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-background/50"
+                )}
+              >
                 <Share2 className="w-4 h-4 mr-2" />
                 Share
-              </TabsTrigger>
+              </button>
               <TabsTrigger value="donate" disabled>
                 <DollarSign className="w-4 h-4 mr-2" />
                 Donate
@@ -493,22 +500,6 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
               </div>
             </TabsContent>
             
-            <TabsContent value="share" className="mt-0">
-              <div className="space-y-4">
-                <Button 
-                  variant="outline" 
-                  onClick={handleShare}
-                  size="lg"
-                >
-                  <Share2 className="w-5 h-5 mr-2" />
-                  Share This Calculator
-                </Button>
-                <p className="text-sm text-muted-foreground">
-                  Share this calculator with others. You can copy the link or use your device's share functionality.
-                </p>
-              </div>
-            </TabsContent>
-            
             <TabsContent value="donate" className="mt-0">
               <div className="space-y-4">
                 <Button 
@@ -535,8 +526,7 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
             {[...Array(4)].map((_, i) => (
               <Card key={i} className="animate-pulse">
                 <CardHeader>
-                  <div className="h-6 bg-muted rounded w-3/4 mb-2"></div>
-                  <div className="h-4 bg-muted rounded w-full"></div>
+                  <div className="h-6 bg-muted rounded w-3/4"></div>
                 </CardHeader>
                 <CardFooter>
                   <div className="h-10 bg-muted rounded w-full"></div>
@@ -550,7 +540,6 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
               <Card key={calc.id}>
                 <CardHeader>
                   <CardTitle className="text-lg">{calc.name}</CardTitle>
-                  <CardDescription>{calc.description || 'No description available.'}</CardDescription>
                 </CardHeader>
                 <CardFooter>
                   <Button asChild variant="secondary" className="w-full">
