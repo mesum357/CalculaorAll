@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2025-12-04T22:59:03.963Z",
+  "last_updated": "2025-12-04T23:43:20.704Z",
   "total_calculators": 168,
   "calculators": [
     {
@@ -6197,42 +6197,93 @@
     {
       "name": "Punnett Square Calculator",
       "slug": "punnett-square-calculator",
-      "description": "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n  <title>Punnett Square Calculator — Predict Genetic Outcomes Quickly</title>\n  <meta name=\"description\" content=\"Free online Punnett Square Calculator for monohybrid, dihybrid and trihybrid crosses. Generate genotypes, phenotypes, ratios and probability percentages instantly.\">\n  <style>\n    :root{font-family:Arial,Helvetica,sans-serif;color:#222;line-height:1.6}\n    body{margin:0;padding:24px;background:#f8fafc}\n    header{max-width:900px;margin:0 auto 18px}\n    main{max-width:900px;margin:0 auto;background:#fff;padding:24px;border-radius:10px;box-shadow:0 6px 18px rgba(20,20,20,0.05)}\n    h1{font-size:1.6rem;margin:0 0 8px}\n    h2{font-size:1.2rem;margin-top:18px}\n    h3{margin-top:14px}\n    p{margin:8px 0}\n    ul{margin:8px 0 16px 20px}\n    ol{margin:8px 0 16px 20px}\n    .steps li{margin-bottom:10px}\n    .cta{display:inline-block;margin-top:14px;padding:10px 16px;background:#0b74de;color:#fff;text-decoration:none;border-radius:8px}\n    .two-cols{display:flex;gap:20px}\n    .col{flex:1}\n    .faq details{margin-bottom:8px}\n    footer{max-width:900px;margin:18px auto;text-align:center;color:#666}\n    pre.schema{background:#f3f4f6;padding:12px;border-radius:8px;overflow:auto;font-size:0.85rem}\n  </style>\n</head>\n<body>\n  <header>\n    <h1>Punnett Square Calculator — Predict Genetic Outcomes Quickly</h1>\n    <p><strong>Predicting genetic outcomes has never been easier.</strong> With a free online Punnett Square Calculator, students, teachers, and researchers can instantly generate monohybrid, dihybrid, and trihybrid crosses without drawing grids manually.</p>\n    <p>This tool helps you understand inheritance patterns, genotype ratios, phenotype probabilities, and how traits are passed from parents to offspring. Whether you're exploring simple Mendelian traits or advanced genetic combinations, the Punnett Square Calculator provides fast, accurate, and classroom-friendly results.</p>\n  </header>\n\n  <main>\n    <section id=\"what-is\">\n      <h2>What is a Punnett Square?</h2>\n      <p>A Punnett square is a genetic diagram used to predict the possible genotypes of offspring from two parents. It was developed by Reginald Punnett, one of the earliest geneticists, to visualize how alleles separate and combine during reproduction.</p>\n\n      <h3>Why it’s important</h3>\n      <ul>\n        <li>Helps explain dominant and recessive alleles</li>\n        <li>Predicts probabilities for inherited traits</li>\n        <li>A foundation for Mendelian genetics</li>\n        <li>Useful for monohybrid, dihybrid, and trihybrid crosses</li>\n      </ul>\n    </section>\n\n    <section id=\"how-to-use\">\n      <h2>How to Use the Punnett Square Calculator (Step-by-Step Guide)</h2>\n      <p>Using a Punnett Square generator is far easier than drawing by hand. Here’s the step-by-step method:</p>\n\n      <ol class=\"steps\">\n        <li><strong>Step 1: Choose Cross Type</strong>\n          <p>Select whether you want a:</p>\n          <ul>\n            <li>Monohybrid cross</li>\n            <li>Dihybrid cross</li>\n            <li>Trihybrid cross</li>\n          </ul>\n        </li>\n\n        <li><strong>Step 2: Enter Parental Genotypes</strong>\n          <p>Type the alleles for Parent 1 and Parent 2 (e.g., <code>AA × AA</code> or <code>RrYy × RrYy</code>).</p>\n        </li>\n\n        <li><strong>Step 3: Click “Generate”</strong>\n          <p>The tool automatically creates the Punnett square grid, calculates allele combinations, and displays:</p>\n          <ul>\n            <li>Genotypes</li>\n            <li>Phenotypes</li>\n            <li>Probability %</li>\n            <li>Genotypic ratio</li>\n            <li>Phenotypic ratio</li>\n          </ul>\n        </li>\n\n        <li><strong>Step 4: Download or Share</strong>\n          <p>Most calculators offer:</p>\n          <ul>\n            <li>PDF download</li>\n            <li>Image export</li>\n            <li>Worksheet mode</li>\n            <li>Shareable results</li>\n          </ul>\n        </li>\n      </ol>\n    </section>\n\n    <section id=\"examples\">\n      <h2>Examples &amp; Solved Problems</h2>\n      <p>(Monohybrid → Dihybrid → Trihybrid)</p>\n\n      <article>\n        <h3>Monohybrid Cross Example (AA × AA)</h3>\n        <ul>\n          <li>A = dominant allele</li>\n          <li>a = recessive allele</li>\n        </ul>\n        <p><strong>Punnett Square output:</strong></p>\n        <ul>\n          <li>Genotypes: AA, AA, AA, AA</li>\n          <li>Genotypic ratio: 1:1</li>\n          <li>Phenotypic ratio: 1 dominant : 1 recessive</li>\n        </ul>\n      </article>\n\n      <article>\n        <h3>Dihybrid Cross Example (RrYy × RrYy)</h3>\n        <ul>\n          <li>R = round seed (dominant), r = wrinkled</li>\n          <li>Y = yellow seed (dominant), y = green</li>\n        </ul>\n        <p>This produces 16 combinations in a 4×4 Punnett square.</p>\n        <p><strong>Genotypic ratio (simplified):</strong></p>\n        <ul>\n          <li>9 dominant</li>\n          <li>3 dominant</li>\n          <li>3 recessive</li>\n          <li>1 recessive</li>\n        </ul>\n        <p><strong>Phenotypic probability:</strong> 9:3:3:1 (Classic Mendelian ratio)</p>\n      </article>\n\n      <article>\n        <h3>Trihybrid Cross Example</h3>\n        <p>This generates 64 boxes, making it nearly impossible by hand. The calculator solves it instantly and outputs:</p>\n        <ul>\n          <li>Multiple genotype patterns</li>\n          <li>Accurate phenotype probability</li>\n          <li>Clean distribution chart</li>\n        </ul>\n      </article>\n    </section>\n\n    <section id=\"when-to-use\">\n      <h2>When to Use a Calculator vs. Draw Manually</h2>\n      <div class=\"two-cols\">\n        <div class=\"col\">\n          <h3>Use an Online Calculator when:</h3>\n          <ul>\n            <li>The cross has more than one trait</li>\n            <li>You need fast answers</li>\n            <li>You want downloadable worksheets</li>\n            <li>You need exact percentages or ratios</li>\n            <li>Time is limited (exams, class, homework)</li>\n          </ul>\n        </div>\n        <div class=\"col\">\n          <h3>Draw Manually when:</h3>\n          <ul>\n            <li>Learning the basics of genetics</li>\n            <li>Practicing monohybrid crosses</li>\n            <li>Doing simple Punnett square diagrams</li>\n          </ul>\n        </div>\n      </div>\n    </section>\n\n    <section id=\"resources\">\n      <h2>Downloadable Worksheets &amp; App Recommendations</h2>\n      <h3>Printable Worksheets</h3>\n      <ul>\n        <li>Blank Punnett square templates</li>\n        <li>Monohybrid practice sheets</li>\n        <li>Dihybrid practice grids</li>\n        <li>Trihybrid worksheet</li>\n      </ul>\n\n      <h3>Best Punnett Square Apps</h3>\n      <ul>\n        <li>Learn Genetics App</li>\n        <li>Genetic Solver Mobile</li>\n        <li>Punnett Square Master (Android)</li>\n        <li>Biology Tools Suite</li>\n      </ul>\n    </section>\n\n    <section id=\"faq\" class=\"faq\">\n      <h2>Frequently Asked Questions</h2>\n\n      <details>\n        <summary>What is a Punnett Square Calculator?</summary>\n        <p>It is an online tool that predicts genotype and phenotype outcomes using parental alleles.</p>\n      </details>\n\n      <details>\n        <summary>How do I do a Punnett Square?</summary>\n        <p>Write the alleles of each parent, separate them into gametes, and combine them in a grid.</p>\n      </details>\n\n      <details>\n        <summary>Can the calculator solve dihybrid and trihybrid crosses?</summary>\n        <p>Yes. It can quickly solve large grids (16-box or 64-box) within seconds.</p>\n      </details>\n\n      <details>\n        <summary>What is genotypic ratio?</summary>\n        <p>It represents the ratio of genetic combinations (e.g., 1AA : 2Aa : 1aa).</p>\n      </details>\n\n      <h3>FAQ Schema (JSON-LD)</h3>\n      <pre class=\"schema\"><code>{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"FAQPage\",\n  \"mainEntity\": [\n    {\n      \"@type\": \"Question\",\n      \"name\": \"What is a Punnett Square Calculator?\",\n      \"acceptedAnswer\": {\"@type\":\"Answer\",\"text\":\"It is an online tool that predicts genotype and phenotype outcomes using parental alleles.\"}\n    },\n    {\n      \"@type\": \"Question\",\n      \"name\": \"How to do a Punnett Square?\",\n      \"acceptedAnswer\": {\"@type\":\"Answer\",\"text\":\"Write the alleles of each parent, separate them into gametes, and combine them in a grid.\"}\n    },\n    {\n      \"@type\": \"Question\",\n      \"name\": \"Can the calculator solve dihybrid and trihybrid crosses?\",\n      \"acceptedAnswer\": {\"@type\":\"Answer\",\"text\":\"Yes. It can quickly solve large grids (16-box or 64-box) within seconds.\"}\n    },\n    {\n      \"@type\": \"Question\",\n      \"name\": \"What is genotypic ratio?\",\n      \"acceptedAnswer\": {\"@type\":\"Answer\",\"text\":\"It represents the ratio of genetic combinations (e.g., 1AA: 2Aa: 1aa).\"}\n    }\n  ]\n}</code></pre>\n\n    </section>\n\n    <section id=\"conclusion\">\n      <h2>Conclusion &amp; Call to Action</h2>\n      <p>The Punnett Square Calculator is the fastest and easiest way to understand genetic inheritance. Whether you’re solving monohybrid, dihybrid, or trihybrid crosses, this tool saves time and gives accurate results with a single click.</p>\n      <a class=\"cta\" href=\"#\">Try the Calculator</a>\n    </section>\n  </main>\n\n  <footer>\n    <p>&copy; <span id=\"year\">2025</span> Punnett Square Calculator — All rights reserved.</p>\n  </footer>\n\n  <script>\n    document.getElementById('year').textContent = new Date().getFullYear();\n  </script>\n</body>\n</html>\n",
+      "description": "Calculate Punnett square size, gametes and total offspring combinations from two parental genotypes (e.g., 'RrYy', 'Aa', 'AaBbCc'). All formulas use math.js syntax.",
       "href": null,
       "is_active": true,
       "category": "Biology",
       "subcategory": "Genetic",
-      "subtitle": "A Punnett square is a genetic diagram used to predict the possible genotypes of offspring from two parents. It was developed by Reginald Punnett, one of the earliest geneticists, to visualize how alleles separate and combine during reproduction.",
       "inputs": [
         {
-          "key": "parent1",
+          "key": "x",
           "type": "text",
-          "label": "Parent 1 genotype (e.g., Aa)",
+          "label": "Parent 1 Genotype",
           "order": 0,
           "required": true,
-          "defaultValue": "Aa"
+          "placeholder": "e.g. RrYy or AA",
+          "defaultValue": ""
         },
         {
-          "key": "parent2",
+          "key": "y",
           "type": "text",
-          "label": "Parent 2 genotype (e.g., Aa)",
+          "label": "Parent 2 Genotype",
           "order": 1,
           "required": true,
-          "defaultValue": "Aa"
+          "placeholder": "e.g. RrYy or AaBbCc",
+          "defaultValue": ""
         }
       ],
       "results": [
         {
-          "key": "punnett_result",
-          "label": "Punnett probabilities",
-          "format": "text",
-          "formula": "compute_punnett(parent1,parent2)"
+          "key": "gene_pairs_x",
+          "unit": "pairs",
+          "label": "Gene pairs (Parent 1)",
+          "format": "number",
+          "formula": "floor(length(x) / 2)"
+        },
+        {
+          "key": "gene_pairs_y",
+          "unit": "pairs",
+          "label": "Gene pairs (Parent 2)",
+          "format": "number",
+          "formula": "floor(length(y) / 2)"
+        },
+        {
+          "key": "gametes_x",
+          "unit": "gametes",
+          "label": "Gametes (Parent 1)",
+          "format": "number",
+          "formula": "2 ^ floor(length(x) / 2)"
+        },
+        {
+          "key": "gametes_y",
+          "unit": "gametes",
+          "label": "Gametes (Parent 2)",
+          "format": "number",
+          "formula": "2 ^ floor(length(y) / 2)"
+        },
+        {
+          "key": "punnett_rows",
+          "unit": "rows",
+          "label": "Punnett square rows (Parent 1 gametes)",
+          "format": "number",
+          "formula": "2 ^ floor(length(x) / 2)"
+        },
+        {
+          "key": "punnett_cols",
+          "unit": "columns",
+          "label": "Punnett square columns (Parent 2 gametes)",
+          "format": "number",
+          "formula": "2 ^ floor(length(y) / 2)"
+        },
+        {
+          "key": "total_boxes",
+          "unit": "boxes",
+          "label": "Total Punnett boxes (general)",
+          "format": "number",
+          "formula": "2 ^ ( floor(length(x) / 2) + floor(length(y) / 2) )"
+        },
+        {
+          "key": "classic_boxes",
+          "unit": "boxes",
+          "label": "Classic boxes (if parents have same gene-pairs n)",
+          "format": "number",
+          "formula": "4 ^ floor(length(x) / 2)"
         }
       ],
       "tags": [],
       "most_used": false,
       "likes": 0,
-      "popular": true
+      "popular": false
     },
     {
       "name": "qPCR Efficiency Calculator",

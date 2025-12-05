@@ -187,13 +187,21 @@ export default function CalculatorPage() {
         ? JSON.parse(calculator.results)
         : [];
 
-      // Convert input values to numbers
-      const inputValues: Record<string, number> = {};
+      // Convert input values based on their type (preserve strings for text inputs, convert to numbers for number inputs)
+      const inputValues: Record<string, number | string> = {};
       inputs.forEach((input: any) => {
         const inputName = input.name || input.label || input.key || `input_${input.id}`;
-        const value = parseFloat(values[inputName] || '0');
+        const rawValue = values[inputName] || '';
         const key = input.key || inputName;
-        inputValues[key] = isNaN(value) ? 0 : value;
+        const inputType = input.type || 'number';
+        
+        if (inputType === 'number') {
+          const value = parseFloat(rawValue);
+          inputValues[key] = isNaN(value) ? 0 : value;
+        } else {
+          // For text inputs, preserve the string value
+          inputValues[key] = rawValue;
+        }
       });
 
       // Create scope with input values and JavaScript objects/functions
@@ -472,13 +480,205 @@ export default function CalculatorPage() {
           
           return results.join(', ');
         },
+        // Length function for arrays, strings, and objects
+        length: (value: any) => {
+          if (value === null || value === undefined) {
+            return 0;
+          }
+          if (Array.isArray(value)) {
+            return value.length;
+          }
+          if (typeof value === 'string') {
+            return value.length;
+          }
+          if (typeof value === 'object') {
+            return Object.keys(value).length;
+          }
+          if (typeof value === 'number') {
+            return String(value).length;
+          }
+          return 0;
+        },
       };
       const computed: Record<string, any> = {};
+
+      // Helper function to convert ^ operator to pow() function
+      const convertPowerOperator = (formula: string): string => {
+        // Convert ^ operator to pow() function
+        // This handles patterns like: a ^ b, (a + b) ^ c, a ^ (b + c), etc.
+        let result = formula;
+        
+        // Function to find matching closing parenthesis
+        const findMatchingParen = (str: string, start: number): number => {
+          let depth = 1;
+          for (let i = start + 1; i < str.length; i++) {
+            if (str[i] === '(') depth++;
+            if (str[i] === ')') depth--;
+            if (depth === 0) return i;
+          }
+          return -1;
+        };
+        
+        // Function to find the start of an operand (going left from a position)
+        const findOperandStart = (str: string, endPos: number): number => {
+          let pos = endPos;
+          // Skip whitespace
+          while (pos >= 0 && /\s/.test(str[pos])) pos--;
+          if (pos < 0) return endPos;
+          
+          if (str[pos] === ')') {
+            // Find matching opening parenthesis
+            let depth = 1;
+            let start = pos - 1;
+            while (start >= 0 && depth > 0) {
+              if (str[start] === ')') depth++;
+              if (str[start] === '(') depth--;
+              start--;
+            }
+            const parenStart = start + 1;
+            
+            // Check if there's a function name before the opening parenthesis
+            let funcStart = parenStart - 1;
+            while (funcStart >= 0 && /\s/.test(str[funcStart])) funcStart--;
+            if (funcStart >= 0 && /[a-zA-Z_]/.test(str[funcStart])) {
+              // This might be a function call, include the function name
+              while (funcStart >= 0 && /[a-zA-Z0-9_]/.test(str[funcStart])) funcStart--;
+              return funcStart + 1;
+            }
+            
+            return parenStart;
+          } else if (/[a-zA-Z_]/.test(str[pos])) {
+            // Extract identifier (might be part of a function call or variable)
+            let start = pos;
+            while (start >= 0 && /[a-zA-Z0-9_]/.test(str[start])) start--;
+            return start + 1;
+          } else if (/[0-9]/.test(str[pos])) {
+            // Extract number (including decimal point)
+            let start = pos;
+            while (start >= 0 && /[0-9.]/.test(str[start])) start--;
+            return start + 1;
+          } else {
+            // Single character
+            return pos;
+          }
+        };
+        
+        // Function to find the end of an operand (going right from a position)
+        const findOperandEnd = (str: string, startPos: number): number => {
+          let pos = startPos;
+          // Skip whitespace
+          while (pos < str.length && /\s/.test(str[pos])) pos++;
+          if (pos >= str.length) return startPos;
+          
+          if (str[pos] === '(') {
+            // Find matching closing parenthesis
+            const end = findMatchingParen(str, pos);
+            return end >= 0 ? end : pos;
+          } else if (/[a-zA-Z_]/.test(str[pos])) {
+            // This might be an identifier or function call
+            // Extract the identifier first
+            let end = pos;
+            while (end < str.length && /[a-zA-Z0-9_]/.test(str[end])) end++;
+            
+            // Check if this identifier is followed by a function call
+            let nextPos = end;
+            while (nextPos < str.length && /\s/.test(str[nextPos])) nextPos++;
+            
+            if (nextPos < str.length && str[nextPos] === '(') {
+              // This is a function call, include the entire call
+              const parenEnd = findMatchingParen(str, nextPos);
+              return parenEnd >= 0 ? parenEnd : nextPos;
+            } else {
+              // Just an identifier or variable
+              return end - 1;
+            }
+          } else if (/[0-9]/.test(str[pos])) {
+            // Extract number (including decimal point)
+            let end = pos;
+            while (end < str.length && /[0-9.]/.test(str[end])) end++;
+            return end - 1;
+          } else {
+            // Single character or unknown
+            return pos;
+          }
+        };
+        
+        // Process from right to left to handle right-associativity
+        let caretIndex = result.lastIndexOf('^');
+        while (caretIndex !== -1) {
+          // Extract left operand (everything before ^)
+          const leftStart = findOperandStart(result, caretIndex - 1);
+          const leftEnd = caretIndex - 1;
+          let leftValue = result.substring(leftStart, leftEnd + 1).trim();
+          
+          // Extract right operand (everything after ^)
+          const rightStart = caretIndex + 1;
+          const rightEnd = findOperandEnd(result, rightStart);
+          let rightValue = result.substring(rightStart, rightEnd + 1).trim();
+          
+          // Remove outer parentheses if they exist for cleaner output
+          // But preserve inner parentheses for function calls and nested expressions
+          while (leftValue.startsWith('(') && leftValue.endsWith(')')) {
+            // Check if the outer parentheses are actually grouping parentheses
+            // by checking if removing them would break the expression
+            const inner = leftValue.slice(1, -1).trim();
+            if (inner.length > 0) {
+              leftValue = inner;
+            } else {
+              break;
+            }
+          }
+          
+          while (rightValue.startsWith('(') && rightValue.endsWith(')')) {
+            const inner = rightValue.slice(1, -1).trim();
+            if (inner.length > 0) {
+              rightValue = inner;
+            } else {
+              break;
+            }
+          }
+          
+          // Ensure we have valid operands
+          if (!leftValue || !rightValue) {
+            console.warn('[Calculator] Invalid operands for power operator:', { leftValue, rightValue, formula: result });
+            break;
+          }
+          
+          const replacement = `pow(${leftValue}, ${rightValue})`;
+          result = result.substring(0, leftStart) + replacement + result.substring(rightEnd + 1);
+          
+          // Find next ^ operator
+          caretIndex = result.lastIndexOf('^');
+        }
+        
+        return result;
+      };
 
       // Helper function to evaluate JavaScript code safely
       const evaluateJavaScript = (code: string, currentScope: Record<string, any>): any => {
         const scopeKeys = Object.keys(currentScope);
         const scopeValues = scopeKeys.map(key => currentScope[key]);
+        
+        // Convert ^ operator to pow() function before evaluation
+        const originalCode = code;
+        code = convertPowerOperator(code);
+        
+        // Debug logging for power operator conversion
+        if (originalCode !== code) {
+          console.log('[Calculator] Power operator conversion:', { original: originalCode, converted: code });
+        }
+        
+        // Verify that pow is available if the code uses it
+        if (code.includes('pow(')) {
+          if (!currentScope.pow) {
+            console.error('[Calculator] pow function not found in scope. Available functions:', Object.keys(currentScope).filter(k => typeof currentScope[k] === 'function'));
+            throw new Error('pow function is not available. Please ensure pow is defined in the calculator scope.');
+          }
+          if (typeof currentScope.pow !== 'function') {
+            console.error('[Calculator] pow is not a function. Type:', typeof currentScope.pow, 'Value:', currentScope.pow);
+            throw new Error(`pow is not a function (type: ${typeof currentScope.pow}). Please ensure pow is defined as a function in the calculator scope.`);
+          }
+        }
         
         // Check if code contains statements (if, for, while, etc.)
         const hasStatements = /^(if|for|while|switch|function|const|let|var|return)\s/.test(code.trim()) || 
@@ -493,12 +693,29 @@ export default function CalculatorPage() {
             console.warn('[Calculator] sqrt function not found in scope. Available functions:', Object.keys(currentScope).filter(k => typeof currentScope[k] === 'function'));
           }
           
+          // Verify pow is in scope keys
+          if (code.includes('pow(') && !scopeKeys.includes('pow')) {
+            console.error('[Calculator] pow is not in scope keys:', scopeKeys);
+            throw new Error('pow function is not in the evaluation scope. This is a bug in the calculator.');
+          }
+          
           const func = new Function(...scopeKeys, functionBody);
           return func(...scopeValues);
         } catch (error: any) {
           // Provide more detailed error message
           const availableFunctions = Object.keys(currentScope).filter(k => typeof currentScope[k] === 'function').join(', ');
-          throw new Error(`JavaScript evaluation error: ${error.message}. Available functions: ${availableFunctions}`);
+          const errorMsg = error.message || 'Unknown error';
+          console.error('[Calculator] Evaluation error:', {
+            originalCode,
+            convertedCode: code,
+            functionBody,
+            error: errorMsg,
+            availableFunctions,
+            scopeKeys: scopeKeys.slice(0, 10), // First 10 keys for debugging
+            powInScope: currentScope.pow,
+            powType: typeof currentScope.pow
+          });
+          throw new Error(`JavaScript evaluation error: ${errorMsg}. Available functions: ${availableFunctions}. Original formula: ${originalCode}`);
         }
       };
 
