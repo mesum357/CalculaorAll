@@ -64,6 +64,14 @@ export default function CalculatorPage() {
           return;
         }
 
+        // Validate calculator has required fields
+        if (!calc.id || !calc.name || !calc.slug) {
+          console.error('Invalid calculator data:', calc);
+          setError('Calculator data is invalid');
+          setLoading(false);
+          return;
+        }
+
         setCalculator(calc);
 
         // Initialize input values

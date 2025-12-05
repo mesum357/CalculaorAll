@@ -364,8 +364,28 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
     }
   };
 
-  if (!calculator) {
-    return <div>No calculator data available.</div>;
+  // Check if calculator is valid (not null, undefined, or empty object)
+  // A valid calculator should have at least an id or name
+  const isValidCalculator = calculator && (
+    (calculator.id !== undefined && calculator.id !== null) ||
+    (calculator.name !== undefined && calculator.name !== null && calculator.name !== '')
+  );
+
+  if (!isValidCalculator) {
+    // Log for debugging
+    console.warn('[CalculatorInfo] Invalid calculator data:', calculator);
+    // Return null during initial load to avoid showing error message prematurely
+    if (calculator === null || calculator === undefined) {
+      return null;
+    }
+    // Show error message if calculator exists but is invalid
+    return (
+      <div className="max-w-4xl mx-auto p-4">
+        <div className="text-center text-muted-foreground">
+          No calculator data available.
+        </div>
+      </div>
+    );
   }
 
   return (

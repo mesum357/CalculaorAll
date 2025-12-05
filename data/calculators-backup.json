@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2025-12-04T23:43:20.704Z",
+  "last_updated": "2025-12-05T01:40:14.621Z",
   "total_calculators": 168,
   "calculators": [
     {
@@ -182,64 +182,68 @@
     {
       "name": "Allele Frequency Calculator",
       "slug": "allele-frequency-calculator",
-      "description": "Calculate allele frequencies from genotype counts.",
+      "description": "<h1>Allele Frequency Calculator: Your Complete Guide to Genetics Calculations</h1>\n\n<h2>Introduction</h2>\n<p>\n    Understanding genetics is no longer limited to scientists in labs. With online tools like the \n    <strong>allele frequency calculator</strong>, students, researchers, and biology enthusiasts can calculate\n    the frequency of alleles in a population quickly and accurately. This article explains allele frequency,\n    formulas, examples, and related concepts such as the Hardy-Weinberg equation and p and q values.\n</p>\n\n<hr>\n\n<h2>What is Allele Frequency?</h2>\n<p>\n    Allele frequency, also called gene frequency, is the proportion of a specific allele among all alleles \n    of a gene in a population. It helps in studying genetic variation, evolution, and population genetics.\n</p>\n\n<p><strong>Primary keyword:</strong> allele frequency calculator<br>\n<strong>Secondary keywords:</strong> genetic variation calculator, population genetics</p>\n\n<p><strong>Example:</strong> If a population has 100 individuals, and 60 carry the dominant allele (A) while 40 carry \nthe recessive allele (a), the frequency of A is 0.6, and a is 0.4.</p>\n\n<h3>Key Points:</h3>\n<ul>\n    <li>Allele frequency measures the occurrence of a gene variant.</li>\n    <li>It is expressed as a decimal or percentage.</li>\n    <li>Allele frequency changes over time due to natural selection, mutation, migration, and genetic drift.</li>\n</ul>\n\n<hr>\n\n<h2>How to Use the Allele Frequency Calculator</h2>\n<p>\n    Using an online allele frequency calculator simplifies complex calculations. These tools allow users to \n    enter genotype counts or phenotype observations, and automatically calculate allele frequencies.\n</p>\n\n<h3>Steps to Use:</h3>\n<ol>\n    <li>Enter the number of individuals for each genotype (AA, Aa, aa).</li>\n    <li>Click “Calculate”.</li>\n    <li>Get p and q values representing allele frequencies.</li>\n</ol>\n\n<p><strong>Secondary keywords:</strong> p and q values, genotype to allele frequency</p>\n\n<h3>Top Online Tools:</h3>\n<ul>\n    <li>International Genome Allele Frequency Calculator</li>\n    <li>Pro Calculator: Allele Frequency Tool</li>\n    <li>Calculators Conversion: P and Q</li>\n    <li>Ensemble Allele Frequency Tool</li>\n    <li>Calculator-Online: Allele Frequency</li>\n</ul>\n\n<hr>\n\n<h2>Allele Frequency Formula</h2>\n<p>To manually calculate allele frequencies, use the formulas:</p>\n\n<pre>\np = (2N<sub>AA</sub> + N<sub>Aa</sub>) / (2N<sub>total</sub>)\nq = (2N<sub>aa</sub> + N<sub>Aa</sub>) / (2N<sub>total</sub>)\n</pre>\n\n<h3>Where:</h3>\n<ul>\n    <li>p = frequency of dominant allele</li>\n    <li>q = frequency of recessive allele</li>\n    <li>N<sub>AA</sub>, N<sub>Aa</sub>, N<sub>aa</sub> = number of individuals with each genotype</li>\n    <li>N<sub>total</sub> = total individuals in the population</li>\n</ul>\n\n<p><strong>Secondary keywords:</strong> allele frequency formula, p and q values, population genetics calculator</p>\n\n<h3>Step-by-Step Example</h3>\n<p>Suppose a population has:</p>\n<ul>\n    <li>50 individuals with AA</li>\n    <li>30 individuals with Aa</li>\n    <li>20 individuals with aa</li>\n</ul>\n\n<p><strong>Step 1:</strong> Total alleles = 2 × 100 = 200</p>\n\n<p><strong>Step 2:</strong> Calculate p<br>\np = (2×50 + 30) / 200 = 130 / 200 = <strong>0.65</strong></p>\n\n<p><strong>Step 3:</strong> Calculate q<br>\nq = 1 – p = 1 – 0.65 = <strong>0.35</strong></p>\n\n<p><strong>Result:</strong></p>\n<ul>\n    <li>Frequency of A = 0.65</li>\n    <li>Frequency of a = 0.35</li>\n</ul>\n\n<hr>\n\n<h2>Hardy-Weinberg Equation Explained</h2>\n<p>\n    The Hardy-Weinberg principle predicts how allele frequencies will be inherited in a population under ideal \n    conditions (no mutation, migration, selection, or genetic drift).\n</p>\n\n<pre>\np² + 2pq + q² = 1\n</pre>\n\n<h3>Meaning:</h3>\n<ul>\n    <li>p² = frequency of AA</li>\n    <li>2pq = frequency of Aa</li>\n    <li>q² = frequency of aa</li>\n</ul>\n\n<h3>How to Use It:</h3>\n<ol>\n    <li>Calculate p and q using the allele frequency formula.</li>\n    <li>Plug into the Hardy-Weinberg equation.</li>\n    <li>Predict genotype frequencies for the next generation.</li>\n</ol>\n\n<p><strong>Secondary keywords:</strong> Hardy-Weinberg equation, genetic variation calculator, evolution calculator</p>\n\n<hr>\n\n<h2>Practical Applications of Allele Frequency</h2>\n<ul>\n    <li>Population Genetics: Understand how genes are distributed.</li>\n    <li>Evolutionary Studies: Track changes in allele frequency over time.</li>\n    <li>Medical Genetics: Identify risk alleles for inherited diseases.</li>\n    <li>Conservation Biology: Manage genetic diversity in endangered species.</li>\n</ul>\n\n<hr>\n\n<h2>Common Mistakes to Avoid</h2>\n<ul>\n    <li>Confusing allele frequency with genotype frequency.</li>\n    <li>Not accounting for total population correctly.</li>\n    <li>Ignoring rare alleles or mutations.</li>\n    <li>Using small sample sizes leading to inaccurate results.</li>\n</ul>\n\n<hr>\n\n<h2>FAQs</h2>\n\n<h3>Q1: What is the difference between p and q?</h3>\n<p>\n    p represents the frequency of the dominant allele.<br>\n    q represents the frequency of the recessive allele.\n</p>\n\n<h3>Q2: Can allele frequency exceed 1?</h3>\n<p>No, allele frequencies range from 0 to 1.</p>\n\n<h3>Q3: How accurate are online allele frequency calculators?</h3>\n<p>They are highly accurate if you input correct genotype counts.</p>\n\n<h3>Q4: Is Hardy-Weinberg applicable to all populations?</h3>\n<p>\n    Only under ideal conditions. Real populations may deviate due to evolution.\n</p>\n\n<hr>\n\n<h2>Final Thoughts</h2>\n<p>\n    Calculating allele frequency is essential for understanding population genetics, evolution, and genetic \n    variation. Using tools like an allele frequency calculator or manual formulas ensures accuracy, saves time, \n    and enhances learning. Understanding p and q values, the Hardy-Weinberg equation, and their practical \n    applications helps students and researchers explore genetics with confidence.\n</p>",
       "href": null,
       "is_active": true,
-      "category": "Biology",
-      "subcategory": "Genetic",
+      "category": "Math",
+      "subcategory": "Population Genetics",
+      "subtitle": "hgfhg",
       "inputs": [
         {
-          "key": "count_AA",
+          "key": "AA_count",
           "min": 0,
           "type": "number",
-          "label": "Count AA",
+          "label": "Count of AA (Homozygous Dominant)",
           "order": 0,
           "required": true,
-          "defaultValue": "10"
+          "defaultValue": "0"
         },
         {
-          "key": "count_Aa",
+          "key": "Aa_count",
           "min": 0,
           "type": "number",
-          "label": "Count Aa",
+          "label": "Count of Aa (Heterozygous)",
           "order": 1,
           "required": true,
-          "defaultValue": "20"
+          "defaultValue": "0"
         },
         {
-          "key": "count_aa",
+          "key": "aa_count",
           "min": 0,
           "type": "number",
-          "label": "Count aa",
+          "label": "Count of aa (Homozygous Recessive)",
           "order": 2,
           "required": true,
-          "defaultValue": "10"
+          "defaultValue": "0"
         }
       ],
       "results": [
         {
           "key": "total_individuals",
-          "label": "Total individuals",
+          "unit": "",
+          "label": "Total Individuals (N)",
           "format": "number",
-          "formula": "count_AA + count_Aa + count_aa"
+          "formula": "AA_count + Aa_count + aa_count"
         },
         {
-          "key": "freq_A",
-          "label": "Allele frequency A",
+          "key": "p",
+          "unit": "",
+          "label": "Allele Frequency p (A)",
           "format": "number",
-          "formula": "((2*count_AA) + count_Aa) / (2 * (count_AA + count_Aa + count_aa))"
+          "formula": "(2*AA_count + Aa_count) / (2*(AA_count + Aa_count + aa_count))"
         },
         {
-          "key": "freq_a",
-          "label": "Allele frequency a",
+          "key": "q",
+          "unit": "",
+          "label": "Allele Frequency q (a)",
           "format": "number",
-          "formula": "1 - freq_A"
+          "formula": "(2*aa_count + Aa_count) / (2*(AA_count + Aa_count + aa_count))"
         }
       ],
       "tags": [],
-      "most_used": true,
+      "most_used": false,
       "likes": 0,
-      "popular": false
+      "popular": true
     },
     {
       "name": "Angle Cut Calculator",
