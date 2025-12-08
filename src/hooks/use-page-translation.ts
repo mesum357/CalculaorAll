@@ -26,6 +26,9 @@ const shouldTranslate = (text: string): boolean => {
 // Store original English text for each translated element
 const originalTexts = new WeakMap<Element, string>();
 
+// Global map: translated text -> original text (for reverse lookup)
+const translationReverseMap = new Map<string, string>();
+
 export function usePageTranslation() {
   const { translate, translateBatch, currentLanguage, isLoading, setTranslatingPage } = useTranslation();
 
@@ -38,16 +41,19 @@ export function usePageTranslation() {
       setTranslatingPage(true);
       
       const restoreToEnglish = () => {
-        // Find all translated elements and restore original text
+        console.log('[usePageTranslation] Reverse map size:', translationReverseMap.size);
+        console.log('[usePageTranslation] Sample reverse map entries:', Array.from(translationReverseMap.entries()).slice(0, 3));
+        
+        // Strategy 1: Find elements with data-original-text attribute
         const translatedElements = document.querySelectorAll('[data-translated]');
+        console.log('[usePageTranslation] Found', translatedElements.length, 'elements with data-translated');
         let restoredCount = 0;
         
+        // First, try to restore using data attributes
         translatedElements.forEach((element) => {
-          // Get original text from data attribute
           const originalText = element.getAttribute('data-original-text');
+          
           if (originalText) {
-            // Find all text nodes in this element
-            const textNodes: Text[] = [];
             const walker = document.createTreeWalker(
               element,
               NodeFilter.SHOW_TEXT,
@@ -57,37 +63,75 @@ export function usePageTranslation() {
             let node;
             while ((node = walker.nextNode())) {
               if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
-                textNodes.push(node as Text);
+                const currentText = node.textContent.trim();
+                if (currentText !== originalText) {
+                  (node as Text).textContent = originalText;
+                  restoredCount++;
+                  break;
+                }
               }
             }
             
-            // Restore the original text
-            // If there's only one text node, replace it directly
-            // If multiple, replace the first non-empty one
-            if (textNodes.length > 0) {
-              const targetNode = textNodes[0];
-              if (targetNode) {
-                targetNode.textContent = originalText;
-                restoredCount++;
-              }
-            } else {
-              // No text nodes found, try setting textContent on the element itself
-              if (element.textContent) {
-                element.textContent = originalText;
-                restoredCount++;
-              }
-            }
-            
-            // Remove translation markers
             element.removeAttribute('data-translated');
             element.removeAttribute('data-original-text');
           } else {
-            // No original text stored, just remove the marker
             element.removeAttribute('data-translated');
           }
         });
         
-        console.log('[usePageTranslation] Restored', restoredCount, 'elements to English');
+        // Strategy 2: Walk through ALL text nodes and restore using reverse map
+        // This is more reliable as it doesn't depend on data attributes
+        if (translationReverseMap.size > 0) {
+          const allTextNodes: Text[] = [];
+          const walker = document.createTreeWalker(
+            document.body,
+            NodeFilter.SHOW_TEXT,
+            {
+              acceptNode: (node) => {
+                const parent = node.parentElement;
+                if (!parent || parent.tagName === 'SCRIPT' || parent.tagName === 'STYLE') {
+                  return NodeFilter.FILTER_REJECT;
+                }
+                if (parent?.closest('[data-no-translate]')) {
+                  return NodeFilter.FILTER_REJECT;
+                }
+                return NodeFilter.FILTER_ACCEPT;
+              }
+            }
+          );
+          
+          let node;
+          while ((node = walker.nextNode())) {
+            if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
+              allTextNodes.push(node as Text);
+            }
+          }
+          
+          console.log('[usePageTranslation] Checking', allTextNodes.length, 'text nodes for restoration');
+          
+          allTextNodes.forEach((textNode) => {
+            const currentText = textNode.textContent?.trim();
+            if (currentText && translationReverseMap.has(currentText)) {
+              const originalText = translationReverseMap.get(currentText)!;
+              if (currentText !== originalText) {
+                textNode.textContent = originalText;
+                restoredCount++;
+                // Remove any translation markers from parent
+                const parent = textNode.parentElement;
+                if (parent) {
+                  parent.removeAttribute('data-translated');
+                  parent.removeAttribute('data-original-text');
+                }
+              }
+            }
+          });
+        }
+        
+        console.log('[usePageTranslation] Restored', restoredCount, 'text nodes to English');
+        
+        // Clear reverse map after restoration
+        translationReverseMap.clear();
+        
         setTranslatingPage(false);
       };
       
@@ -212,6 +256,10 @@ export function usePageTranslation() {
             
             batch.forEach((text, index) => {
               translations[text] = translated[index];
+              // Store reverse mapping: translated -> original
+              if (translated[index] && translated[index] !== text) {
+                translationReverseMap.set(translated[index], text);
+              }
             });
 
             // Apply visible translations immediately (progressive rendering)
@@ -221,10 +269,18 @@ export function usePageTranslation() {
                 if (translated && translated !== text) {
                   const parent = node.parentElement;
                   if (parent) {
-                    // Store original text before translating
-                    parent.setAttribute('data-original-text', text);
+                    // Store original text before translating - use the exact original text
+                    // Make sure we're storing on the right element (immediate parent of text node)
+                    if (!parent.hasAttribute('data-original-text')) {
+                      parent.setAttribute('data-original-text', text);
+                    }
                     parent.setAttribute('data-translated', 'true');
                     originalTexts.set(parent, text);
+                    console.log('[usePageTranslation] Stored original text:', {
+                      text: text.substring(0, 50),
+                      parent: parent.tagName,
+                      hasAttribute: parent.hasAttribute('data-original-text')
+                    });
                   }
                   node.textContent = translated;
                 }
@@ -255,8 +311,11 @@ export function usePageTranslation() {
                 if (translated && translated !== text) {
                   const parent = node.parentElement;
                   if (parent) {
-                    // Store original text before translating
-                    parent.setAttribute('data-original-text', text);
+                    // Store original text before translating - use the exact original text
+                    // Make sure we're storing on the right element (immediate parent of text node)
+                    if (!parent.hasAttribute('data-original-text')) {
+                      parent.setAttribute('data-original-text', text);
+                    }
                     parent.setAttribute('data-translated', 'true');
                     originalTexts.set(parent, text);
                   }
