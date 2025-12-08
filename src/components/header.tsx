@@ -21,6 +21,7 @@ import { Logo } from "./logo";
 import { useAuth } from "@/contexts/auth-context";
 import { UserProfileMenu } from "./user-profile-menu";
 import { api, type Calculator } from "@/lib/api";
+import { LanguageSelector } from "./language-selector";
 
 
 export function Header() {
@@ -174,6 +175,7 @@ export function Header() {
                 <Search className="h-5 w-5" />
                 <span className="sr-only">Search</span>
             </Button>
+          <LanguageSelector />
           <ThemeToggle />
           {!loading && (
             <>

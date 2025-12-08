@@ -430,5 +430,51 @@ export const api = {
       }
     },
   },
+  translation: {
+    translate: async (text: string, targetLanguage: string): Promise<string> => {
+      console.log('[API] Translating text:', { text: text.substring(0, 50), targetLanguage });
+      const response = await fetch(`${API_BASE_URL}/translation/translate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, targetLanguage }),
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('[API] Translation failed:', { status: response.status, error: errorData });
+        throw new Error(errorData.message || errorData.error || 'Failed to translate text');
+      }
+      const data = await response.json();
+      console.log('[API] Translation success:', { original: text.substring(0, 50), translated: data.translation?.substring(0, 50) });
+      return data.translation;
+    },
+    translateBatch: async (texts: string[], targetLanguage: string): Promise<string[]> => {
+      console.log('[API] Translating batch:', { count: texts.length, targetLanguage, sample: texts.slice(0, 3) });
+      const response = await fetch(`${API_BASE_URL}/translation/translate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: texts, targetLanguage }),
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('[API] Batch translation failed:', { status: response.status, error: errorData });
+        throw new Error(errorData.message || errorData.error || 'Failed to translate texts');
+      }
+      const data = await response.json();
+      const result = Array.isArray(data.translation) ? data.translation : [data.translation];
+      console.log('[API] Batch translation success:', { count: result.length, targetLanguage });
+      return result;
+    },
+    getLanguages: async () => {
+      const response = await fetch(`${API_BASE_URL}/translation/languages`, {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch languages');
+      }
+      return response.json();
+    },
+  },
 };
 

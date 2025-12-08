@@ -1,0 +1,203 @@
+"use client";
+
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { api } from '@/lib/api';
+
+export type Language = 'english' | 'spanish' | 'french' | 'chinese' | 'japanese' | 'arabic' | 'korean' | 'german' | 'italian' | 'polish' | 'portuguese' | 'romanian' | 'swedish';
+
+interface LanguageInfo {
+  code: string;
+  name: string;
+  key: Language;
+}
+
+interface TranslationContextType {
+  currentLanguage: Language;
+  languages: LanguageInfo[];
+  translate: (text: string) => Promise<string>;
+  translateBatch: (texts: string[]) => Promise<string[]>;
+  setLanguage: (language: Language) => Promise<void>;
+  translations: Record<string, string>;
+  isLoading: boolean;
+  isTranslatingPage: boolean;
+  setTranslatingPage: (isTranslating: boolean) => void;
+}
+
+const TranslationContext = createContext<TranslationContextType | undefined>(undefined);
+
+export function TranslationProvider({ children }: { children: React.ReactNode }) {
+  const [currentLanguage, setCurrentLanguage] = useState<Language>('english');
+  const [languages, setLanguages] = useState<LanguageInfo[]>([]);
+  const [translations, setTranslations] = useState<Record<string, string>>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [isTranslatingPage, setIsTranslatingPage] = useState(false);
+
+  // Load available languages
+  useEffect(() => {
+    const loadLanguages = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/translation/languages`);
+        const data = await response.json();
+        console.log('[Translation] Loaded languages from API:', data.languages?.length || 0, data.languages);
+        if (data.languages && Array.isArray(data.languages)) {
+          setLanguages(data.languages);
+        }
+      } catch (error) {
+        console.error('Failed to load languages:', error);
+        // Set fallback languages if API fails
+        setLanguages([
+          { code: 'en', name: 'English', key: 'english' },
+          { code: 'es', name: 'Spanish', key: 'spanish' },
+          { code: 'fr', name: 'French', key: 'french' },
+          { code: 'zh', name: 'Chinese', key: 'chinese' },
+          { code: 'ja', name: 'Japanese', key: 'japanese' },
+          { code: 'ar', name: 'Arabic', key: 'arabic' },
+          { code: 'ko', name: 'Korean', key: 'korean' },
+          { code: 'de', name: 'German', key: 'german' },
+          { code: 'it', name: 'Italian', key: 'italian' },
+          { code: 'pl', name: 'Polish', key: 'polish' },
+          { code: 'pt', name: 'Portuguese', key: 'portuguese' },
+          { code: 'ro', name: 'Romanian', key: 'romanian' },
+          { code: 'sv', name: 'Swedish', key: 'swedish' },
+        ]);
+      }
+    };
+    loadLanguages();
+  }, []);
+
+  // Load saved language preference
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedLanguage = localStorage.getItem('preferredLanguage') as Language;
+      const validLanguages: Language[] = ['english', 'spanish', 'french', 'chinese', 'japanese', 'arabic', 'korean', 'german', 'italian', 'polish', 'portuguese', 'romanian', 'swedish'];
+      if (savedLanguage && validLanguages.includes(savedLanguage)) {
+        setCurrentLanguage(savedLanguage);
+      }
+    }
+  }, []);
+
+  const translate = useCallback(async (text: string): Promise<string> => {
+    if (currentLanguage === 'english' || !text || text.trim().length === 0) {
+      return text;
+    }
+
+    // Check cache first
+    const cacheKey = `${currentLanguage}:${text}`;
+    if (translations[cacheKey]) {
+      return translations[cacheKey];
+    }
+
+    try {
+      console.log('[TranslationContext] Translating:', { text: text.substring(0, 50), currentLanguage });
+      const translated = await api.translation.translate(text, currentLanguage);
+      console.log('[TranslationContext] Translated:', { original: text.substring(0, 50), translated: translated?.substring(0, 50), currentLanguage });
+      
+      // Cache the translation
+      setTranslations(prev => ({
+        ...prev,
+        [cacheKey]: translated,
+      }));
+      
+      return translated;
+    } catch (error) {
+      console.error('[TranslationContext] Translation error:', { 
+        error: error instanceof Error ? error.message : error,
+        text: text.substring(0, 50),
+        currentLanguage 
+      });
+      return text; // Return original text on error
+    }
+  }, [currentLanguage, translations]);
+
+  const translateBatch = useCallback(async (texts: string[]): Promise<string[]> => {
+    if (currentLanguage === 'english' || texts.length === 0) {
+      return texts;
+    }
+
+    // Filter out texts that are already cached
+    const cacheKey = `${currentLanguage}:`;
+    const uncachedTexts: string[] = [];
+    const cachedResults: (string | null)[] = [];
+    
+    texts.forEach((text, index) => {
+      const key = `${cacheKey}${text}`;
+      if (translations[key]) {
+        cachedResults[index] = translations[key];
+      } else {
+        cachedResults[index] = null;
+        uncachedTexts.push(text);
+      }
+    });
+
+    // If all texts are cached, return immediately
+    if (uncachedTexts.length === 0) {
+      return cachedResults as string[];
+    }
+
+    try {
+      const translated = await api.translation.translateBatch(uncachedTexts, currentLanguage);
+      
+      // Cache the new translations
+      const newTranslations: Record<string, string> = {};
+      uncachedTexts.forEach((text, index) => {
+        const key = `${cacheKey}${text}`;
+        newTranslations[key] = translated[index];
+      });
+      
+      setTranslations(prev => ({
+        ...prev,
+        ...newTranslations,
+      }));
+
+      // Combine cached and new translations
+      let uncachedIndex = 0;
+      return cachedResults.map(result => {
+        if (result !== null) {
+          return result;
+        }
+        return translated[uncachedIndex++];
+      });
+    } catch (error) {
+      console.error('Batch translation error:', error);
+      return texts; // Return original texts on error
+    }
+  }, [currentLanguage, translations]);
+
+  const setLanguage = useCallback(async (language: Language) => {
+    console.log('[TranslationContext] Setting language:', language);
+    setCurrentLanguage(language);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('preferredLanguage', language);
+    }
+    // Clear translations cache when language changes
+    setTranslations({});
+    console.log('[TranslationContext] Language set to:', language);
+  }, []);
+
+  return (
+    <TranslationContext.Provider
+      value={{
+        currentLanguage,
+        languages,
+        translate,
+        translateBatch,
+        setLanguage,
+        translations,
+        isLoading,
+        isTranslatingPage,
+        setTranslatingPage: setIsTranslatingPage,
+      }}
+    >
+      {children}
+    </TranslationContext.Provider>
+  );
+}
+
+export function useTranslation() {
+  const context = useContext(TranslationContext);
+  if (context === undefined) {
+    throw new Error('useTranslation must be used within a TranslationProvider');
+  }
+  return context;
+}
+
