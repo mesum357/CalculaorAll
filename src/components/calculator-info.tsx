@@ -394,22 +394,27 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
       <Card className="w-full">
         <CardContent className="p-6">
           <Tabs defaultValue="about" className="w-full">
-            <TabsList className="mb-6 grid w-full grid-cols-4">
-              <TabsTrigger value="about">About</TabsTrigger>
-              <TabsTrigger value="reviews">Reviews & Comments</TabsTrigger>
+            <TabsList className="mb-6 grid w-full grid-cols-2 sm:grid-cols-4 gap-1 sm:gap-2 h-auto p-1">
+              <TabsTrigger value="about" className="text-xs sm:text-sm px-2 sm:px-3 py-2 sm:py-1.5 whitespace-nowrap min-w-0">
+                About
+              </TabsTrigger>
+              <TabsTrigger value="reviews" className="text-xs sm:text-sm px-2 sm:px-3 py-2 sm:py-1.5 whitespace-nowrap min-w-0">
+                <span className="hidden sm:inline">Reviews & Comments</span>
+                <span className="sm:hidden">Reviews</span>
+              </TabsTrigger>
               <button
                 type="button"
                 onClick={handleShare}
                 className={cn(
-                  "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-background/50"
+                  "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-2 sm:px-3 py-2 sm:py-1.5 text-xs sm:text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-background/50 min-w-0"
                 )}
               >
-                <Share2 className="w-4 h-4 mr-2" />
-                Share
+                <Share2 className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2 flex-shrink-0" />
+                <span className="hidden sm:inline">Share</span>
               </button>
-              <TabsTrigger value="donate" disabled>
-                <DollarSign className="w-4 h-4 mr-2" />
-                Donate
+              <TabsTrigger value="donate" disabled className="text-xs sm:text-sm px-2 sm:px-3 py-2 sm:py-1.5 whitespace-nowrap min-w-0">
+                <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2 flex-shrink-0" />
+                <span className="hidden sm:inline">Donate</span>
               </TabsTrigger>
             </TabsList>
             

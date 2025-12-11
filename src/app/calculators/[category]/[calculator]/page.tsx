@@ -222,6 +222,7 @@ export default function CalculatorPage() {
         String: String,
         Object: Object,
         JSON: JSON,
+        Date: Date,
         // Math.js function mappings
         sqrt: (x: number) => Math.sqrt(x),
         abs: (x: number) => Math.abs(x),
@@ -268,6 +269,66 @@ export default function CalculatorPage() {
             return num1;
           };
           return Math.abs(a * b) / (gcdFunc(a, b) || 1);
+        },
+        // Date functions
+        add_days: (date: string | Date | number, days: number) => {
+          try {
+            let dateObj: Date;
+            
+            // Handle different input types
+            if (typeof date === 'string') {
+              // Try to parse the date string
+              const dateStr = date.trim();
+              dateObj = new Date(dateStr);
+              
+              // If parsing fails, try alternative formats
+              if (isNaN(dateObj.getTime())) {
+                // Try common date formats: YYYY-MM-DD, MM/DD/YYYY, etc.
+                const formats = [
+                  dateStr, // Original
+                  dateStr.replace(/\//g, '-'), // Convert slashes to dashes
+                  dateStr.replace(/-/g, '/'), // Convert dashes to slashes
+                ];
+                
+                for (const format of formats) {
+                  const parsed = new Date(format);
+                  if (!isNaN(parsed.getTime())) {
+                    dateObj = parsed;
+                    break;
+                  }
+                }
+                
+                if (isNaN(dateObj.getTime())) {
+                  throw new Error(`Invalid date format: ${date}`);
+                }
+              }
+            } else if (typeof date === 'number') {
+              // Assume it's a timestamp (milliseconds since epoch)
+              dateObj = new Date(date);
+            } else if (date instanceof Date) {
+              dateObj = date;
+            } else {
+              throw new Error(`Invalid date type: ${typeof date}`);
+            }
+            
+            // Validate the date
+            if (isNaN(dateObj.getTime())) {
+              throw new Error(`Invalid date: ${date}`);
+            }
+            
+            // Add days
+            const result = new Date(dateObj);
+            result.setDate(result.getDate() + Math.floor(Number(days) || 0));
+            
+            return result;
+          } catch (error) {
+            console.error('[Calculator] add_days error:', {
+              date,
+              days,
+              error: error instanceof Error ? error.message : error
+            });
+            throw new Error(`add_days failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          }
         },
         // Punnett Square functions
         compute_punnett: (parent1: string, parent2: string) => {
@@ -892,24 +953,34 @@ export default function CalculatorPage() {
 
   return (
     <div className="container py-12">
-      <div className="relative flex items-center justify-between mb-8 bg-card p-4 rounded-lg shadow-sm">
-        <Button variant="ghost" size="icon" className="absolute left-4 top-1/2 -translate-y-1/2" onClick={() => router.back()}>
-          <ArrowLeft className="h-6 w-6" />
+      <div className="relative flex items-center justify-between mb-8 bg-card p-4 rounded-lg shadow-sm min-h-[60px] md:min-h-[70px]">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-10 flex-shrink-0" 
+          onClick={() => router.back()}
+        >
+          <ArrowLeft className="h-5 w-5 md:h-6 md:w-6" />
           <span className="sr-only">Back</span>
         </Button>
-        <div className="flex-1 text-center">
-          <h1 className="text-2xl md:text-3xl font-bold font-headline">{calculator.name}</h1>
+        <div className="flex-1 text-center px-12 md:px-16 min-w-0">
+          <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold font-headline truncate line-clamp-2 break-words">
+            {calculator.name}
+          </h1>
         </div>
-        <div className="absolute right-4 top-1/2 -translate-y-1/2">
+        <div className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-10 flex-shrink-0">
           <Button 
             variant={isLiked ? "default" : "outline"} 
             onClick={handleLike}
             disabled={loadingLikes}
             size="sm"
+            className="h-8 md:h-9 px-2 md:px-3 text-xs md:text-sm"
           >
-            <Heart className={`w-4 h-4 mr-2 ${isLiked ? 'fill-current' : ''}`} />
-            {loadingLikes ? "..." : isLiked ? "Liked" : "Like"}
-            {likeCount > 0 && ` (${likeCount})`}
+            <Heart className={`w-3 h-3 md:w-4 md:h-4 ${isLiked ? 'fill-current' : ''} md:mr-2`} />
+            <span className="hidden sm:inline">
+              {loadingLikes ? "..." : isLiked ? "Liked" : "Like"}
+              {likeCount > 0 && ` (${likeCount})`}
+            </span>
           </Button>
         </div>
       </div>
