@@ -66,7 +66,6 @@ export default function CalculatorPage() {
 
         // Validate calculator has required fields
         if (!calc.id || !calc.name || !calc.slug) {
-          console.error('Invalid calculator data:', calc);
           setError('Calculator data is invalid');
           setLoading(false);
           return;
@@ -85,7 +84,6 @@ export default function CalculatorPage() {
             }
           }
         } catch (e) {
-          console.error('Error parsing inputs:', e);
           inputs = [];
         }
 
@@ -102,7 +100,6 @@ export default function CalculatorPage() {
             await api.calculatorInteractions.trackView(calc.id);
           } catch (err) {
             // Silently fail - view tracking is not critical
-            console.error('Error tracking view:', err);
           }
         }
 
@@ -113,7 +110,7 @@ export default function CalculatorPage() {
             setIsLiked(likesData.isLiked);
             setLikeCount(likesData.likeCount);
           } catch (err) {
-            console.error('Error fetching likes:', err);
+            // Error handled silently
           } finally {
             setLoadingLikes(false);
           }
@@ -121,7 +118,6 @@ export default function CalculatorPage() {
           setLoadingLikes(false);
         }
       } catch (err) {
-        console.error('Error fetching calculator:', err);
         setError('Failed to load calculator');
         setLoadingLikes(false);
       } finally {
@@ -159,7 +155,6 @@ export default function CalculatorPage() {
         description: data.liked ? "You can find it in your profile." : "",
       });
     } catch (error: any) {
-      console.error('Error toggling like:', error);
       if (error.message && error.message.includes('Authentication required')) {
         toast({
           title: "Authentication Required",
@@ -322,11 +317,6 @@ export default function CalculatorPage() {
             
             return result;
           } catch (error) {
-            console.error('[Calculator] add_days error:', {
-              date,
-              days,
-              error: error instanceof Error ? error.message : error
-            });
             throw new Error(`add_days failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
           }
         },
@@ -709,7 +699,6 @@ export default function CalculatorPage() {
           
           // Ensure we have valid operands
           if (!leftValue || !rightValue) {
-            console.warn('[Calculator] Invalid operands for power operator:', { leftValue, rightValue, formula: result });
             break;
           }
           
@@ -732,19 +721,12 @@ export default function CalculatorPage() {
         const originalCode = code;
         code = convertPowerOperator(code);
         
-        // Debug logging for power operator conversion
-        if (originalCode !== code) {
-          console.log('[Calculator] Power operator conversion:', { original: originalCode, converted: code });
-        }
-        
         // Verify that pow is available if the code uses it
         if (code.includes('pow(')) {
           if (!currentScope.pow) {
-            console.error('[Calculator] pow function not found in scope. Available functions:', Object.keys(currentScope).filter(k => typeof currentScope[k] === 'function'));
             throw new Error('pow function is not available. Please ensure pow is defined in the calculator scope.');
           }
           if (typeof currentScope.pow !== 'function') {
-            console.error('[Calculator] pow is not a function. Type:', typeof currentScope.pow, 'Value:', currentScope.pow);
             throw new Error(`pow is not a function (type: ${typeof currentScope.pow}). Please ensure pow is defined as a function in the calculator scope.`);
           }
         }
@@ -757,14 +739,8 @@ export default function CalculatorPage() {
         const functionBody = hasStatements ? code : `return ${code}`;
         
         try {
-          // Verify that Math.js functions are in scope
-          if (!currentScope.sqrt && code.includes('sqrt')) {
-            console.warn('[Calculator] sqrt function not found in scope. Available functions:', Object.keys(currentScope).filter(k => typeof currentScope[k] === 'function'));
-          }
-          
           // Verify pow is in scope keys
           if (code.includes('pow(') && !scopeKeys.includes('pow')) {
-            console.error('[Calculator] pow is not in scope keys:', scopeKeys);
             throw new Error('pow function is not in the evaluation scope. This is a bug in the calculator.');
           }
           
@@ -774,16 +750,6 @@ export default function CalculatorPage() {
           // Provide more detailed error message
           const availableFunctions = Object.keys(currentScope).filter(k => typeof currentScope[k] === 'function').join(', ');
           const errorMsg = error.message || 'Unknown error';
-          console.error('[Calculator] Evaluation error:', {
-            originalCode,
-            convertedCode: code,
-            functionBody,
-            error: errorMsg,
-            availableFunctions,
-            scopeKeys: scopeKeys.slice(0, 10), // First 10 keys for debugging
-            powInScope: currentScope.pow,
-            powType: typeof currentScope.pow
-          });
           throw new Error(`JavaScript evaluation error: ${errorMsg}. Available functions: ${availableFunctions}. Original formula: ${originalCode}`);
         }
       };
@@ -888,7 +854,6 @@ export default function CalculatorPage() {
               format: result.format || 'number',
             };
           } catch (err) {
-            console.error('Error calculating result:', err);
             const resultKey = result.key || result.name || result.label || `result_${result.id}`;
             calculatedResults[resultKey] = {
               value: 'Error',
@@ -901,7 +866,7 @@ export default function CalculatorPage() {
 
       setResults(calculatedResults);
     } catch (err) {
-      console.error('Error calculating results:', err);
+      // Error handled silently
     }
   };
 
@@ -1001,7 +966,6 @@ export default function CalculatorPage() {
                   }
                 }
               } catch (e) {
-                console.error('Error parsing inputs:', e);
                 inputs = [];
               }
 

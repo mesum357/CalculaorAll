@@ -13,66 +13,19 @@ export function PopularCalculators() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log('[PopularCalculators] Component mounted, fetching popular calculators...');
-    
     const fetchPopular = async () => {
       try {
         setLoading(true);
-        console.log('[PopularCalculators] Starting fetch with params:', { popular: true, is_active: true });
         
         const data = await api.calculators.getAll({ popular: true, is_active: true });
         
-        console.log('[PopularCalculators] Fetch successful:', {
-          totalReceived: Array.isArray(data) ? data.length : 'not an array',
-          dataType: typeof data,
-          sampleData: Array.isArray(data) && data.length > 0 ? {
-            id: data[0].id,
-            name: data[0].name,
-            subtitle: data[0].subtitle,
-            description: data[0].description,
-            hasSubtitle: !!data[0].subtitle
-          } : 'no data'
-        });
-        
         const limitedData = Array.isArray(data) ? data.slice(0, 12) : [];
         
-        // Debug: Log subtitle values for all calculators
-        console.log('[PopularCalculators] ========== SUBTITLE DEBUG ==========');
-        limitedData.forEach((calc, index) => {
-          console.log(`[PopularCalculators] Calculator ${index + 1} (${calc.name}):`, {
-            id: calc.id,
-            name: calc.name,
-            subtitle: calc.subtitle,
-            subtitleType: typeof calc.subtitle,
-            isNull: calc.subtitle === null,
-            isUndefined: calc.subtitle === undefined,
-            isEmpty: calc.subtitle === '',
-            trimmed: calc.subtitle ? calc.subtitle.trim() : 'N/A',
-            hasSubtitle: !!(calc.subtitle && calc.subtitle.trim()),
-            description: calc.description,
-            willShowSubtitle: !!(calc.subtitle && calc.subtitle.trim())
-          });
-        });
-        console.log('[PopularCalculators] ======================================');
-        
         setCalculators(limitedData);
-        
-        console.log('[PopularCalculators] Setting calculators:', {
-          count: limitedData.length,
-          names: limitedData.map(c => c.name),
-          subtitles: limitedData.map(c => ({ name: c.name, subtitle: c.subtitle }))
-        });
       } catch (error) {
-        console.error('[PopularCalculators] Error fetching popular calculators:', {
-          error: error instanceof Error ? error.message : error,
-          stack: error instanceof Error ? error.stack : undefined,
-          errorType: error?.constructor?.name,
-          fullError: error
-        });
         setCalculators([]);
       } finally {
         setLoading(false);
-        console.log('[PopularCalculators] Fetch completed, loading set to false');
       }
     };
 
@@ -126,14 +79,6 @@ export function PopularCalculators() {
           const subtitleValue = calc.subtitle && calc.subtitle.trim() ? calc.subtitle : null;
           const descriptionValue = calc.description && calc.description.trim() ? calc.description : null;
           const displayText = subtitleValue || descriptionValue || 'No description available.';
-          
-          console.log(`[PopularCalculators] Rendering calculator "${calc.name}":`, {
-            id: calc.id,
-            subtitle: calc.subtitle,
-            subtitleType: typeof calc.subtitle,
-            subtitleValue: subtitleValue,
-            description: calc.description,
-            descriptionValue: descriptionValue,
             displayText: displayText,
             willShowSubtitle: !!subtitleValue
           });

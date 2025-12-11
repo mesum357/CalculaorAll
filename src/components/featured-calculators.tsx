@@ -13,40 +13,19 @@ export function FeaturedCalculators() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log('[FeaturedCalculators] Component mounted, fetching most used calculators...');
-    
     const fetchMostUsed = async () => {
       try {
         setLoading(true);
-        console.log('[FeaturedCalculators] Starting fetch with params:', { most_used: true, is_active: true });
         
         const data = await api.calculators.getAll({ most_used: true, is_active: true });
         
-        console.log('[FeaturedCalculators] Fetch successful:', {
-          totalReceived: Array.isArray(data) ? data.length : 'not an array',
-          dataType: typeof data,
-          sampleData: Array.isArray(data) && data.length > 0 ? data[0] : 'no data'
-        });
-        
         const limitedData = Array.isArray(data) ? data.slice(0, 9) : [];
         setCalculators(limitedData);
-        
-        console.log('[FeaturedCalculators] Setting calculators:', {
-          count: limitedData.length,
-          names: limitedData.map(c => c.name)
-        });
       } catch (error) {
-        console.error('[FeaturedCalculators] Error fetching most used calculators:', {
-          error: error instanceof Error ? error.message : error,
-          stack: error instanceof Error ? error.stack : undefined,
-          errorType: error?.constructor?.name,
-          fullError: error
-        });
         // Fallback to empty array on error
         setCalculators([]);
       } finally {
         setLoading(false);
-        console.log('[FeaturedCalculators] Fetch completed, loading set to false');
       }
     };
 

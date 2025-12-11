@@ -87,7 +87,7 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
 
         setRelatedCalculators(related);
       } catch (error) {
-        console.error('Error fetching related calculators:', error);
+        // Error handled silently
       } finally {
         setLoadingRelated(false);
       }
@@ -107,7 +107,7 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
         setIsLiked(data.isLiked);
         setLikeCount(data.likeCount);
       } catch (error) {
-        console.error('Error fetching likes:', error);
+        // Error handled silently
       } finally {
         setLoadingLikes(false);
       }
@@ -131,7 +131,7 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
           setRating(data.userRating);
         }
       } catch (error) {
-        console.error('Error fetching ratings:', error);
+        // Error handled silently
       } finally {
         setLoadingRatings(false);
       }
@@ -150,7 +150,7 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
         const data = await api.calculatorInteractions.getComments(calculator.id);
         setComments(data);
       } catch (error) {
-        console.error('Error fetching comments:', error);
+        // Error handled silently
       } finally {
         setLoadingComments(false);
       }
@@ -186,7 +186,6 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
         description: data.liked ? "You can find it in your profile." : "",
       });
     } catch (error: any) {
-      console.error('Error toggling like:', error);
       if (error.message && error.message.includes('Authentication required')) {
         toast({
           title: "Authentication Required",
@@ -233,7 +232,6 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
         description: "Thank you for your feedback.",
       });
     } catch (error: any) {
-      console.error('Error submitting rating:', error);
       if (error.message && error.message.includes('Authentication required')) {
         toast({
           title: "Authentication Required",
@@ -275,7 +273,6 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
       } catch (error: any) {
         // User cancelled or error occurred
         if (error.name !== 'AbortError') {
-          console.error('Error sharing:', error);
           // Fall back to clipboard
           await copyToClipboard(calculatorUrl);
         }
@@ -295,7 +292,6 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
         description: "The calculator link has been copied to your clipboard.",
       });
     } catch (error) {
-      console.error('Failed to copy:', error);
       // Fallback for older browsers
       const textArea = document.createElement('textarea');
       textArea.value = url;
@@ -345,7 +341,6 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
         description: "Thank you for your feedback.",
       });
     } catch (error: any) {
-      console.error('Error submitting comment:', error);
       if (error.message && error.message.includes('Authentication required')) {
         toast({
           title: "Authentication Required",
@@ -373,8 +368,6 @@ export function CalculatorInfo({ calculator }: CalculatorInfoProps) {
   );
 
   if (!isValidCalculator) {
-    // Log for debugging
-    console.warn('[CalculatorInfo] Invalid calculator data:', calculator);
     // Return null during initial load to avoid showing error message prematurely
     if (calculator === null || calculator === undefined) {
       return null;

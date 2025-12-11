@@ -33,20 +33,13 @@ export function usePageTranslation() {
   const { translate, translateBatch, currentLanguage, isLoading, setTranslatingPage } = useTranslation();
 
   useEffect(() => {
-    console.log('[usePageTranslation] Effect triggered:', { currentLanguage, isLoading });
-    
     // Handle English: restore original text
     if (currentLanguage === 'english') {
-      console.log('[usePageTranslation] Restoring English text');
       setTranslatingPage(true);
       
       const restoreToEnglish = () => {
-        console.log('[usePageTranslation] Reverse map size:', translationReverseMap.size);
-        console.log('[usePageTranslation] Sample reverse map entries:', Array.from(translationReverseMap.entries()).slice(0, 3));
-        
         // Strategy 1: Find elements with data-original-text attribute
         const translatedElements = document.querySelectorAll('[data-translated]');
-        console.log('[usePageTranslation] Found', translatedElements.length, 'elements with data-translated');
         let restoredCount = 0;
         
         // First, try to restore using data attributes
@@ -107,8 +100,6 @@ export function usePageTranslation() {
             }
           }
           
-          console.log('[usePageTranslation] Checking', allTextNodes.length, 'text nodes for restoration');
-          
           allTextNodes.forEach((textNode) => {
             const currentText = textNode.textContent?.trim();
             if (currentText && translationReverseMap.has(currentText)) {
@@ -127,8 +118,6 @@ export function usePageTranslation() {
           });
         }
         
-        console.log('[usePageTranslation] Restored', restoredCount, 'text nodes to English');
-        
         // Clear reverse map after restoration
         translationReverseMap.clear();
         
@@ -141,7 +130,6 @@ export function usePageTranslation() {
     }
     
     if (isLoading) {
-      console.log('[usePageTranslation] Skipping translation:', { reason: 'isLoading' });
       return;
     }
 
@@ -276,11 +264,6 @@ export function usePageTranslation() {
                     }
                     parent.setAttribute('data-translated', 'true');
                     originalTexts.set(parent, text);
-                    console.log('[usePageTranslation] Stored original text:', {
-                      text: text.substring(0, 50),
-                      parent: parent.tagName,
-                      hasAttribute: parent.hasAttribute('data-original-text')
-                    });
                   }
                   node.textContent = translated;
                 }
@@ -326,7 +309,7 @@ export function usePageTranslation() {
           }
         }
       } catch (error) {
-        console.error('Page translation error:', error);
+        // Translation error handled silently
       } finally {
         if (!isCancelled) {
           setTranslatingPage(false);
@@ -341,7 +324,6 @@ export function usePageTranslation() {
 
     // Also listen for language change events
     const handleLanguageChange = () => {
-      console.log('[usePageTranslation] Language change event received:', { currentLanguage });
       isCancelled = true; // Cancel any ongoing translation
       
       // If switching to English, restore original text
@@ -388,7 +370,6 @@ export function usePageTranslation() {
       });
       // Re-translate immediately
       isCancelled = false;
-      console.log('[usePageTranslation] Starting translation for:', currentLanguage);
       translatePageContent();
     };
 

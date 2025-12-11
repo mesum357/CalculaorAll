@@ -23,7 +23,7 @@ export function UserProfileMenu() {
     try {
       await logout();
     } catch (error) {
-      console.error('Logout error:', error);
+      // Error handled silently
     } finally {
       setIsLoggingOut(false);
     }

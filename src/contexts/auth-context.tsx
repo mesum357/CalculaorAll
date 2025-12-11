@@ -47,30 +47,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
-    console.log('[AuthContext] Login called:', { email, hasPassword: !!password });
-    
     try {
       const data = await api.auth.login(email, password);
       
-      console.log('[AuthContext] Login successful:', {
-        hasUser: !!data.user,
-        user: data.user,
-        message: data.message
-      });
-      
       if (data.user) {
         setUser(data.user);
-        console.log('[AuthContext] User state updated, redirecting...');
         router.push('/');
-      } else {
-        console.warn('[AuthContext] Login successful but no user data received');
       }
     } catch (error) {
-      console.error('[AuthContext] Login error:', {
-        error: error instanceof Error ? error.message : error,
-        stack: error instanceof Error ? error.stack : undefined,
-        errorType: error?.constructor?.name
-      });
       throw error;
     }
   };

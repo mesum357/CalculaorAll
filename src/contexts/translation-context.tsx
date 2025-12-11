@@ -38,12 +38,10 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/translation/languages`);
         const data = await response.json();
-        console.log('[Translation] Loaded languages from API:', data.languages?.length || 0, data.languages);
         if (data.languages && Array.isArray(data.languages)) {
           setLanguages(data.languages);
         }
       } catch (error) {
-        console.error('Failed to load languages:', error);
         // Set fallback languages if API fails
         setLanguages([
           { code: 'en', name: 'English', key: 'english' },
@@ -88,9 +86,7 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
     }
 
     try {
-      console.log('[TranslationContext] Translating:', { text: text.substring(0, 50), currentLanguage });
       const translated = await api.translation.translate(text, currentLanguage);
-      console.log('[TranslationContext] Translated:', { original: text.substring(0, 50), translated: translated?.substring(0, 50), currentLanguage });
       
       // Cache the translation
       setTranslations(prev => ({
@@ -100,11 +96,6 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
       
       return translated;
     } catch (error) {
-      console.error('[TranslationContext] Translation error:', { 
-        error: error instanceof Error ? error.message : error,
-        text: text.substring(0, 50),
-        currentLanguage 
-      });
       return text; // Return original text on error
     }
   }, [currentLanguage, translations]);
@@ -158,20 +149,17 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
         return translated[uncachedIndex++];
       });
     } catch (error) {
-      console.error('Batch translation error:', error);
       return texts; // Return original texts on error
     }
   }, [currentLanguage, translations]);
 
   const setLanguage = useCallback(async (language: Language) => {
-    console.log('[TranslationContext] Setting language:', language);
     setCurrentLanguage(language);
     if (typeof window !== 'undefined') {
       localStorage.setItem('preferredLanguage', language);
     }
     // Clear translations cache when language changes
     setTranslations({});
-    console.log('[TranslationContext] Language set to:', language);
   }, []);
 
   return (

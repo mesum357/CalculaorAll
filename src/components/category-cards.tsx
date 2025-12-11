@@ -18,7 +18,6 @@ export function CategoryCards() {
         setMainCategories(categories);
         setError(false);
       } catch (error) {
-        console.error('[CategoryCards] Error fetching categories:', error);
         setError(true);
         setMainCategories([]);
       } finally {

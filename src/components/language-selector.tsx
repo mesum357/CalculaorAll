@@ -31,11 +31,6 @@ export function LanguageSelector() {
   const { currentLanguage, setLanguage, languages } = useTranslation();
   const [isChanging, setIsChanging] = useState(false);
 
-  // Debug: Log languages being used
-  useEffect(() => {
-    console.log('[LanguageSelector] Languages from context:', languages.length, languages);
-  }, [languages]);
-
   const handleLanguageChange = async (language: Language) => {
     if (language === currentLanguage) return;
     
@@ -49,7 +44,7 @@ export function LanguageSelector() {
       // Trigger translation immediately
       window.dispatchEvent(new Event('languagechange'));
     } catch (error) {
-      console.error('Failed to change language:', error);
+      // Error handled silently
     } finally {
       setIsChanging(false);
     }

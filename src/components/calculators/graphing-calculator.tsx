@@ -19,9 +19,6 @@ export function GraphingCalculator() {
   const [yMin, setYMin] = useState("-10");
   const [yMax, setYMax] = useState("10");
 
-  useEffect(() => {
-    console.log('[GraphingCalculator] Component rendered');
-  }, []);
 
   const handleGraph = () => {
     // This would integrate with a graphing library in a real implementation

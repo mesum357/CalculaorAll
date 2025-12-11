@@ -16,7 +16,7 @@ export function CategoryList({ currentCategory }: { currentCategory?: string }) 
                 const cats = await getCategories();
                 setCategories(cats);
             } catch (error) {
-                console.error('Error fetching categories:', error);
+                // Error handled silently
             } finally {
                 setLoading(false);
             }

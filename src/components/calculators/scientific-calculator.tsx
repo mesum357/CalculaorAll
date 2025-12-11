@@ -16,9 +16,6 @@ export function ScientificCalculator() {
   const [expression, setExpression] = useState("");
   const [display, setDisplay] = useState("0");
 
-  useEffect(() => {
-    console.log('[ScientificCalculator] Component rendered');
-  }, []);
 
   const factorial = (n: number): number => {
     if (n < 0) return NaN;

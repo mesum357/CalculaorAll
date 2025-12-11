@@ -18,9 +18,6 @@ export function FinancialCalculator() {
   const [time, setTime] = useState("");
   const [result, setResult] = useState<{ monthly: number; total: number; interest: number } | null>(null);
 
-  useEffect(() => {
-    console.log('[FinancialCalculator] Component rendered');
-  }, []);
 
   const calculateLoan = () => {
     const p = parseFloat(principal);

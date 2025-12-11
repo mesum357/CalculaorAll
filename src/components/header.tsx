@@ -50,7 +50,7 @@ export function Header() {
         const cats = await getCategories();
         setCategories(cats);
       } catch (error) {
-        console.error('Error fetching categories:', error);
+        // Error handled silently
       }
     }
     fetchCategories();
@@ -90,7 +90,6 @@ export function Header() {
         setSearchResults(filtered);
         setShowSuggestions(filtered.length > 0);
       } catch (error) {
-        console.error('Error searching calculators:', error);
         setSearchResults([]);
         setShowSuggestions(false);
       }
