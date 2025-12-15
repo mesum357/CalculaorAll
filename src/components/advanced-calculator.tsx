@@ -2,8 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Calculator, FunctionSquare } from 'lucide-react';
+import { Calculator, FunctionSquare, History, Delete } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 
 const factorial = (n: number): number => {
   if (n < 0) return NaN;
@@ -17,13 +24,21 @@ const factorial = (n: number): number => {
 
 type CalculatorMode = 'basic' | 'scientific';
 
+type HistoryItem = {
+  input: string;
+  result: string;
+};
+
 export function AdvancedCalculator() {
   const { theme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [expression, setExpression] = useState('');
   const [display, setDisplay] = useState('0');
   const [result, setResult] = useState<string | null>(null);
+  const [inputExpression, setInputExpression] = useState<string>('');
   const [mode, setMode] = useState<CalculatorMode>('basic');
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   // Handle hydration mismatch
   useEffect(() => {
@@ -39,17 +54,26 @@ export function AdvancedCalculator() {
           setExpression('');
           setDisplay('0');
           setResult(null);
+          setInputExpression('');
           break;
         case '←':
+        case 'DEL':
           if (expression.length > 0) {
             const newExpression = expression.slice(0, -1);
             setExpression(newExpression);
             if (newExpression === '') {
               setDisplay('0');
+              setResult(null);
+              setInputExpression('');
+            } else if (result !== null) {
+              // If we're editing a result, clear the result state
+              setResult(null);
+              setInputExpression('');
             }
           }
           break;
         case '=':
+          const currentInput = expression;
           let evalExpression = expression
             .replace(/×/g, '*')
             .replace(/÷/g, '/')
@@ -90,10 +114,19 @@ export function AdvancedCalculator() {
               : String(calculatedResult);
             setDisplay(formattedResult);
             setResult(formattedResult);
+            setInputExpression(currentInput);
+            
+            // Add to history (keep only last 10)
+            setHistory((prev) => {
+              const newHistory = [{ input: currentInput, result: formattedResult }, ...prev];
+              return newHistory.slice(0, 10);
+            });
+            
             setExpression(formattedResult);
           } catch {
             setDisplay('Error');
             setResult(null);
+            setInputExpression('');
             setExpression('');
           }
           break;
@@ -155,7 +188,15 @@ export function AdvancedCalculator() {
         case '^':
         case '%':
           if (expression === '' && value !== '-' && value !== '(' && value !== '%') return;
-          setExpression((prev) => prev + value);
+          // If we have a result and user is typing an operator, continue from result
+          if (result !== null && display === result) {
+            // Continue from the result
+            setResult(null);
+            setInputExpression('');
+            setExpression((prev) => prev + value);
+          } else {
+            setExpression((prev) => prev + value);
+          }
           break;
         case '+/-':
           if (expression === '') {
@@ -171,16 +212,28 @@ export function AdvancedCalculator() {
           }
           break;
         default: // Numbers
-          if (display === 'Error' || (result !== null && display === result)) {
-            // If we just calculated a result, start fresh
+          if (display === 'Error') {
+            // If error, start fresh
             setExpression(value);
             setResult(null);
+            setInputExpression('');
+          } else if (result !== null && display === result) {
+            // If we just calculated a result and user types a number, start fresh
+            setExpression(value);
+            setResult(null);
+            setInputExpression('');
           } else if (display === '0' && value !== '.') {
             setExpression(value);
+            setResult(null);
           } else {
+            // Continue typing
+            if (result !== null) {
+              // If result exists but we're continuing, clear result state
+              setResult(null);
+              setInputExpression('');
+            }
             setExpression((prev) => prev + value);
           }
-          setResult(null);
       }
     } catch (error) {
       setDisplay('Error');
@@ -341,8 +394,19 @@ export function AdvancedCalculator() {
           isDark ? 'bg-[#1a1a1a]' : 'bg-white'
         )}>
           <div className="text-right">
+            {result !== null && inputExpression && (
+              <div className={cn(
+                'text-xl font-light mb-1 break-all leading-tight opacity-70',
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              )}>
+                {inputExpression.length > 20 ? (
+                  <div className="text-lg">{inputExpression}</div>
+                ) : (
+                  inputExpression
+                )}
+              </div>
+            )}
             <div className={cn(
-              // Removed horizontal scroll to avoid showing a scrollbar/slider in the result area
               'text-5xl font-light mb-2 break-all leading-tight',
               isDark ? 'text-white' : 'text-foreground'
             )}>
@@ -355,35 +419,50 @@ export function AdvancedCalculator() {
           </div>
         </div>
 
-        {/* Mode Toggle */}
+        {/* Mode Toggle, History, and Delete */}
         <div className="px-4 pb-2 flex gap-2 transition-all duration-300 ease-in-out">
           <button
-            onClick={() => setMode('basic')}
+            onClick={() => setMode(mode === 'basic' ? 'scientific' : 'basic')}
             className={cn(
-              'flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-300 ease-in-out flex items-center justify-center gap-2',
-              mode === 'basic'
-                ? 'bg-primary text-primary-foreground'
-                : isDark
-                  ? 'bg-[#2a2a2a] text-muted-foreground hover:text-foreground'
-                  : 'bg-muted text-muted-foreground hover:text-foreground'
+              'py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-300 ease-in-out flex items-center justify-center gap-2',
+              isDark
+                ? 'bg-[#2a2a2a] text-foreground hover:bg-[#353535]'
+                : 'bg-muted text-foreground hover:bg-muted/80'
             )}
           >
-            <Calculator className="h-4 w-4" />
-            Basic
+            {mode === 'basic' ? (
+              <>
+                <FunctionSquare className="h-4 w-4" />
+                Scientific
+              </>
+            ) : (
+              <>
+                <Calculator className="h-4 w-4" />
+                Basic
+              </>
+            )}
           </button>
           <button
-            onClick={() => setMode('scientific')}
+            onClick={() => setIsHistoryOpen(true)}
             className={cn(
-              'flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-300 ease-in-out flex items-center justify-center gap-2',
-              mode === 'scientific'
-                ? 'bg-primary text-primary-foreground'
-                : isDark
-                  ? 'bg-[#2a2a2a] text-muted-foreground hover:text-foreground'
-                  : 'bg-muted text-muted-foreground hover:text-foreground'
+              'py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-300 ease-in-out flex items-center justify-center gap-2',
+              isDark
+                ? 'bg-[#2a2a2a] text-foreground hover:bg-[#353535]'
+                : 'bg-muted text-foreground hover:bg-muted/80'
             )}
           >
-            <FunctionSquare className="h-4 w-4" />
-            Scientific
+            <History className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => handleButtonClick('←')}
+            className={cn(
+              'py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-300 ease-in-out flex items-center justify-center gap-2 ml-auto',
+              isDark
+                ? 'bg-[#2a2a2a] text-foreground hover:bg-[#353535]'
+                : 'bg-muted text-foreground hover:bg-muted/80'
+            )}
+          >
+            <Delete className="h-4 w-4" />
           </button>
         </div>
 
@@ -434,6 +513,57 @@ export function AdvancedCalculator() {
           </div>
         </div>
       </div>
+
+      {/* History Dialog */}
+      <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
+        <DialogContent className="max-w-md max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Calculation History</DialogTitle>
+            <DialogDescription>
+              Your last {history.length} calculation{history.length !== 1 ? 's' : ''}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto mt-4">
+            {history.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No calculations yet
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {history.map((item, index) => (
+                  <div
+                    key={index}
+                    className={cn(
+                      'p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors',
+                      isDark ? 'border-gray-700' : 'border-gray-200'
+                    )}
+                    onClick={() => {
+                      setExpression(item.result);
+                      setDisplay(item.result);
+                      setResult(item.result);
+                      setInputExpression(item.input);
+                      setIsHistoryOpen(false);
+                    }}
+                  >
+                    <div className={cn(
+                      'text-sm mb-1 break-all',
+                      isDark ? 'text-gray-400' : 'text-gray-600'
+                    )}>
+                      {item.input}
+                    </div>
+                    <div className={cn(
+                      'text-lg font-semibold break-all',
+                      isDark ? 'text-white' : 'text-foreground'
+                    )}>
+                      = {item.result}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

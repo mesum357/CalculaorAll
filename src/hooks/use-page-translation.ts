@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from '@/contexts/translation-context';
 
 // Text that should not be translated (like URLs, numbers, etc.)
@@ -31,8 +31,53 @@ const translationReverseMap = new Map<string, string>();
 
 export function usePageTranslation() {
   const { translate, translateBatch, currentLanguage, isLoading, setTranslatingPage } = useTranslation();
+  const [pathname, setPathname] = useState('');
+
+  // Track pathname changes using window.location (actual browser URL)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const updatePathname = () => {
+        const newPath = window.location.pathname;
+        if (newPath !== pathname) {
+          setPathname(newPath);
+        }
+      };
+      
+      updatePathname();
+      
+      // Listen for navigation events
+      window.addEventListener('popstate', updatePathname);
+      
+      // Intercept pushState and replaceState
+      const originalPushState = history.pushState;
+      const originalReplaceState = history.replaceState;
+      
+      history.pushState = function(...args) {
+        originalPushState.apply(this, args);
+        setTimeout(updatePathname, 0);
+      };
+      
+      history.replaceState = function(...args) {
+        originalReplaceState.apply(this, args);
+        setTimeout(updatePathname, 0);
+      };
+      
+      return () => {
+        window.removeEventListener('popstate', updatePathname);
+        history.pushState = originalPushState;
+        history.replaceState = originalReplaceState;
+      };
+    }
+  }, [pathname]);
 
   useEffect(() => {
+    // Clear translated markers when pathname changes to allow re-translation
+    document.querySelectorAll('[data-translated]').forEach(el => {
+      el.removeAttribute('data-translated');
+      el.removeAttribute('data-original-text');
+    });
+    translationReverseMap.clear();
+    
     // Handle English: restore original text
     if (currentLanguage === 'english') {
       setTranslatingPage(true);
@@ -380,6 +425,6 @@ export function usePageTranslation() {
       clearTimeout(timeoutId);
       window.removeEventListener('languagechange', handleLanguageChange);
     };
-  }, [currentLanguage, translate, translateBatch, setTranslatingPage, isLoading]);
+  }, [currentLanguage, translate, translateBatch, setTranslatingPage, isLoading, pathname]);
 }
 

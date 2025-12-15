@@ -1,7 +1,6 @@
 import { getCategories } from '@/lib/categories';
 import { api } from '@/lib/api';
 import Link from 'next/link';
-import { Card, CardContent } from '@/components/ui/card';
 import { CategoryList } from '@/components/category-list';
 import { ArrowRight } from 'lucide-react';
 
@@ -191,43 +190,37 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
                                                 ({subcategoryCalculators.length} {subcategoryCalculators.length === 1 ? 'calculator' : 'calculators'})
                                             </span>
                                         </h2>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                        <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2">
                                             {subcategoryCalculators.map(calc => (
-                                                <Link 
-                                                    href={`/calculators/${category.slug}/${calc.slug}`} 
-                                                    key={calc.id} 
-                                                    className="group"
-                                                >
-                                                    <Card className="h-full transition-all group-hover:shadow-md group-hover:-translate-y-0.5">
-                                                        <CardContent className="p-4 flex items-center justify-between">
-                                                            <h3 className="font-semibold text-base">{calc.name}</h3>
-                                                            <ArrowRight className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                        </CardContent>
-                                                    </Card>
-                                                </Link>
+                                                <li key={calc.id} className="flex items-center gap-2">
+                                                    <span className="w-2 h-2 rounded-full bg-primary dark:bg-white flex-shrink-0" />
+                                                    <Link 
+                                                        href={`/calculators/${category.slug}/${calc.slug}`}
+                                                        className="text-primary dark:text-foreground hover:underline font-normal text-sm"
+                                                    >
+                                                        {calc.name}
+                                                    </Link>
+                                                </li>
                                             ))}
-                                        </div>
+                                        </ul>
                                     </div>
                                 );
                             })}
                         </div>
                     ) : calculators.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2">
                             {calculators.map(calc => (
-                                <Link 
-                                    href={`/calculators/${category.slug}/${calc.slug}`} 
-                                    key={calc.id} 
-                                    className="group"
-                                >
-                                    <Card className="h-full transition-all group-hover:shadow-md group-hover:-translate-y-0.5">
-                                        <CardContent className="p-4 flex items-center justify-between">
-                                            <h3 className="font-semibold text-base">{calc.name}</h3>
-                                            <ArrowRight className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                                        </CardContent>
-                                    </Card>
-                                </Link>
+                                <li key={calc.id} className="flex items-center gap-2">
+                                    <span className="w-2 h-2 rounded-full bg-primary dark:bg-white flex-shrink-0" />
+                                    <Link 
+                                        href={`/calculators/${category.slug}/${calc.slug}`}
+                                        className="text-primary dark:text-foreground hover:underline font-normal text-sm"
+                                    >
+                                        {calc.name}
+                                    </Link>
+                                </li>
                             ))}
-                        </div>
+                        </ul>
                     ) : (
                         <div>
                             <h2 className="text-2xl font-bold mb-4">No calculators found</h2>

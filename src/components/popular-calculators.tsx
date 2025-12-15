@@ -75,13 +75,9 @@ export function PopularCalculators() {
         {calculators.map((calc) => {
           const IconComponent = getCategoryIcon(calc.category_slug) as LucideIcon;
           
-          // Debug: Log subtitle value for each calculator being rendered
           const subtitleValue = calc.subtitle && calc.subtitle.trim() ? calc.subtitle : null;
           const descriptionValue = calc.description && calc.description.trim() ? calc.description : null;
           const displayText = subtitleValue || descriptionValue || 'No description available.';
-            displayText: displayText,
-            willShowSubtitle: !!subtitleValue
-          });
           
           return (
             <Link 
@@ -104,21 +100,6 @@ export function PopularCalculators() {
                   <CardDescription className="text-sm leading-relaxed text-muted-foreground">
                     {displayText}
                   </CardDescription>
-                  {/* Debug info in development */}
-                  {process.env.NODE_ENV === 'development' && (
-                    <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded text-xs">
-                      <div className="font-semibold text-blue-700 dark:text-blue-300">Debug Info:</div>
-                      <div className="text-blue-600 dark:text-blue-400">
-                        Subtitle: {calc.subtitle ? `"${calc.subtitle}"` : 'null/empty'}
-                      </div>
-                      <div className="text-blue-600 dark:text-blue-400">
-                        Description: {calc.description ? `"${calc.description.substring(0, 50)}..."` : 'null/empty'}
-                      </div>
-                      <div className="text-blue-600 dark:text-blue-400">
-                        Displaying: {subtitleValue ? 'Subtitle' : descriptionValue ? 'Description' : 'Default'}
-                      </div>
-                    </div>
-                  )}
                 </CardHeader>
                 <CardContent className="pt-0 mt-auto">
                   <div className="flex items-center text-primary text-sm font-medium group-hover:gap-2 transition-all">

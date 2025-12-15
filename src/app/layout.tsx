@@ -1,4 +1,3 @@
-
 import type { Metadata } from 'next';
 import './globals.css';
 import { cn } from '@/lib/utils';
@@ -8,6 +7,7 @@ import { AuthLayout } from '@/components/auth-layout';
 import { AuthProvider } from '@/contexts/auth-context';
 import { TranslationProvider } from '@/contexts/translation-context';
 import { PageTranslationWrapper } from '@/components/page-translation-wrapper';
+import { LanguageLinkInterceptor } from '@/components/language-link-interceptor';
 
 export const metadata: Metadata = {
   title: 'Calculator1.org',
@@ -35,14 +35,16 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <TranslationProvider>
-            <PageTranslationWrapper>
-              <AuthProvider>
-                <AuthLayout>
-                  <main className="flex-grow">{children}</main>
-                </AuthLayout>
-                <Toaster />
-              </AuthProvider>
-            </PageTranslationWrapper>
+            <LanguageLinkInterceptor>
+              <PageTranslationWrapper>
+                <AuthProvider>
+                  <AuthLayout>
+                    <main className="flex-grow">{children}</main>
+                  </AuthLayout>
+                  <Toaster />
+                </AuthProvider>
+              </PageTranslationWrapper>
+            </LanguageLinkInterceptor>
           </TranslationProvider>
         </ThemeProvider>
       </body>
