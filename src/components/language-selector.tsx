@@ -36,6 +36,25 @@ export function LanguageSelector() {
     
     setIsChanging(true);
     try {
+      // For English, we need to do a full page navigation to get fresh server-rendered content
+      // This is the most reliable way to restore original English text since client-side
+      // translation modifies the DOM directly
+      if (language === 'english') {
+        // Set the cookie first so the server knows the preference
+        document.cookie = `preferredLanguage=en;path=/;max-age=${60 * 60 * 24 * 365}`;
+        localStorage.setItem('preferredLanguage', 'english');
+        
+        // Calculate the new English URL and do a full navigation
+        const currentPath = window.location.pathname;
+        const pathWithoutLang = currentPath.replace(/^\/[a-z]{2}(\/|$)/, '/') || '/';
+        const cleanPath = pathWithoutLang === '/' ? '' : pathWithoutLang.slice(1);
+        const newPath = `/en/${cleanPath}`;
+        
+        // Full page navigation to get fresh content
+        window.location.href = newPath;
+        return;
+      }
+      
       await setLanguage(language);
       // Clear translated markers so content can be re-translated
       document.querySelectorAll('[data-translated]').forEach(el => {
