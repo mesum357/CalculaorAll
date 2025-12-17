@@ -30,7 +30,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const data = await api.auth.getSession();
       if (data.authenticated && data.user) {
-        setUser(data.user);
+        // Ensure name is always set with a fallback
+        setUser({
+          id: data.user.id,
+          email: data.user.email || '',
+          name: data.user.name || data.user.email?.split('@')[0] || 'User'
+        });
       } else {
         setUser(null);
       }
@@ -51,7 +56,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await api.auth.login(email, password);
       
       if (data.user) {
-        setUser(data.user);
+        // Ensure name is always set with a fallback
+        setUser({
+          id: data.user.id,
+          email: data.user.email || email,
+          name: data.user.name || email.split('@')[0] || 'User'
+        });
         router.push('/');
       }
     } catch (error) {
@@ -62,7 +72,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (email: string, password: string, name: string) => {
     const data = await api.auth.register(email, password, name);
     if (data.user) {
-      setUser(data.user);
+      // Ensure name is always set with a fallback
+      setUser({
+        id: data.user.id,
+        email: data.user.email || email,
+        name: data.user.name || name || email.split('@')[0] || 'User'
+      });
       router.push('/');
     }
   };

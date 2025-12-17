@@ -31,18 +31,21 @@ export function UserProfileMenu() {
 
   if (!user) return null;
 
+  // Fallback for name in case it's missing
+  const displayName = user.name || user.email?.split('@')[0] || 'User';
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="flex items-center gap-2">
           <User className="h-5 w-5" />
-          <span className="hidden md:inline">{user.name}</span>
+          <span className="hidden md:inline">{displayName}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user.name}</p>
+            <p className="text-sm font-medium leading-none">{displayName}</p>
             <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
           </div>
         </DropdownMenuLabel>
