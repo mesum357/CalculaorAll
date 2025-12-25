@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { URL_CODE_TO_LANGUAGE } from '@/lib/language-routing';
 
-// Valid language codes
+// Valid language codes (excluding 'en' since English uses root URL)
 const VALID_LANG_CODES = Object.keys(URL_CODE_TO_LANGUAGE);
+const NON_ENGLISH_LANG_CODES = VALID_LANG_CODES.filter(code => code !== 'en');
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -22,8 +23,18 @@ export function middleware(request: NextRequest) {
   const pathnameParts = pathname.split('/').filter(Boolean);
   const firstPart = pathnameParts[0];
 
-  // Check if the first part is a valid language code
-  if (VALID_LANG_CODES.includes(firstPart)) {
+  // If URL starts with /en, redirect to root (English doesn't use prefix)
+  if (firstPart === 'en') {
+    const pathWithoutLang = pathnameParts.length > 1 
+      ? '/' + pathnameParts.slice(1).join('/')
+      : '/';
+    const url = request.nextUrl.clone();
+    url.pathname = pathWithoutLang;
+    return NextResponse.redirect(url);
+  }
+
+  // Check if the first part is a valid non-English language code
+  if (NON_ENGLISH_LANG_CODES.includes(firstPart)) {
     // Language code is already in the URL, rewrite to remove it for internal routing
     const pathWithoutLang = pathnameParts.length > 1 
       ? '/' + pathnameParts.slice(1).join('/')
@@ -36,15 +47,28 @@ export function middleware(request: NextRequest) {
     return response;
   }
 
-  // No language code in URL, redirect to /en/ prefix (or saved language preference)
-  // Check for saved language preference in cookie
+  // No language code in URL - check for saved language preference
   const savedLang = request.cookies.get('preferredLanguage')?.value;
-  const langCode = savedLang && VALID_LANG_CODES.includes(savedLang) ? savedLang : 'en';
-  const newPathname = `/${langCode}${pathname === '/' ? '' : pathname}`;
-  const url = request.nextUrl.clone();
-  url.pathname = newPathname;
   
-  return NextResponse.redirect(url);
+  // If saved language is English or no preference, serve the page (English is default)
+  if (!savedLang || savedLang === 'en') {
+    const response = NextResponse.next();
+    response.headers.set('x-language', 'en');
+    return response;
+  }
+  
+  // If saved language is a non-English language, redirect to that language prefix
+  if (NON_ENGLISH_LANG_CODES.includes(savedLang)) {
+    const newPathname = `/${savedLang}${pathname === '/' ? '' : pathname}`;
+    const url = request.nextUrl.clone();
+    url.pathname = newPathname;
+    return NextResponse.redirect(url);
+  }
+
+  // Default: serve the page as English
+  const response = NextResponse.next();
+  response.headers.set('x-language', 'en');
+  return response;
 }
 
 export const config = {

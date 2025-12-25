@@ -31,42 +31,51 @@ export function LanguageSelector() {
   const { currentLanguage, setLanguage, languages } = useTranslation();
   const [isChanging, setIsChanging] = useState(false);
 
+  // Language code mapping
+  const languageCodes: Record<Language, string> = {
+    english: 'en',
+    spanish: 'es',
+    french: 'fr',
+    chinese: 'zh',
+    japanese: 'ja',
+    arabic: 'ar',
+    korean: 'ko',
+    german: 'de',
+    italian: 'it',
+    polish: 'pl',
+    portuguese: 'pt',
+    romanian: 'ro',
+    swedish: 'sv',
+  };
+
   const handleLanguageChange = async (language: Language) => {
     if (language === currentLanguage) return;
     
     setIsChanging(true);
-    try {
-      // For English, we need to do a full page navigation to get fresh server-rendered content
-      // This is the most reliable way to restore original English text since client-side
-      // translation modifies the DOM directly
-      if (language === 'english') {
-        // Set the cookie first so the server knows the preference
-        document.cookie = `preferredLanguage=en;path=/;max-age=${60 * 60 * 24 * 365}`;
-        localStorage.setItem('preferredLanguage', 'english');
-        
-        // Calculate the new English URL and do a full navigation
-        const currentPath = window.location.pathname;
-        const pathWithoutLang = currentPath.replace(/^\/[a-z]{2}(\/|$)/, '/') || '/';
-        const cleanPath = pathWithoutLang === '/' ? '' : pathWithoutLang.slice(1);
-        const newPath = `/en/${cleanPath}`;
-        
-        // Full page navigation to get fresh content
-        window.location.href = newPath;
-        return;
-      }
-      
-      await setLanguage(language);
-      // Clear translated markers so content can be re-translated
-      document.querySelectorAll('[data-translated]').forEach(el => {
-        el.removeAttribute('data-translated');
-      });
-      // Trigger translation immediately
-      window.dispatchEvent(new Event('languagechange'));
-    } catch (error) {
-      // Error handled silently
-    } finally {
-      setIsChanging(false);
+    
+    // Get the language code
+    const langCode = languageCodes[language];
+    
+    // Set the cookie so the server knows the preference
+    document.cookie = `preferredLanguage=${langCode};path=/;max-age=${60 * 60 * 24 * 365}`;
+    localStorage.setItem('preferredLanguage', language);
+    
+    // Get current path without any language prefix
+    const currentPath = window.location.pathname;
+    const pathWithoutLang = currentPath.replace(/^\/[a-z]{2}(\/|$)/, '/') || '/';
+    const cleanPath = pathWithoutLang === '/' ? '' : pathWithoutLang;
+    
+    // For English, use root URL (no /en prefix)
+    // For other languages, add the language prefix
+    let newPath: string;
+    if (language === 'english') {
+      newPath = cleanPath || '/';
+    } else {
+      newPath = `/${langCode}${cleanPath}`;
     }
+    
+    // Full page navigation for SEO - this refreshes the page with server-rendered content
+    window.location.href = newPath;
   };
 
   return (

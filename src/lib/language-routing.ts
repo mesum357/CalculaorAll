@@ -49,14 +49,22 @@ export function getLocalizedPath(path: string, language: Language): string {
   const code = getCodeFromLanguage(language);
   // Remove leading slash if present
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-  // Don't add language prefix if it's already there
-  if (cleanPath.startsWith(`${code}/`)) {
-    return `/${cleanPath}`;
-  }
+  
   // Don't add language prefix for API routes or special paths
   if (cleanPath.startsWith('api/') || cleanPath.startsWith('_next/') || cleanPath.startsWith('auth/')) {
     return `/${cleanPath}`;
   }
+  
+  // English uses root URL without prefix
+  if (language === 'english' || code === 'en') {
+    return cleanPath ? `/${cleanPath}` : '/';
+  }
+  
+  // Don't add language prefix if it's already there
+  if (cleanPath.startsWith(`${code}/`)) {
+    return `/${cleanPath}`;
+  }
+  
   return `/${code}/${cleanPath}`;
 }
 

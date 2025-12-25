@@ -51,9 +51,9 @@ export function AdvancedCalculator() {
         .replace(/÷/g, '/')
         .replace(/π/g, 'Math.PI')
         .replace(/(?<!Math\.)e(?!xp)/g, 'Math.E')
-        .replace(/sin\(/g, 'Math.sin(')
-        .replace(/cos\(/g, 'Math.cos(')
-        .replace(/tan\(/g, 'Math.tan(')
+        .replace(/sin\(/g, 'Math.sin((Math.PI/180)*')
+        .replace(/cos\(/g, 'Math.cos((Math.PI/180)*')
+        .replace(/tan\(/g, 'Math.tan((Math.PI/180)*')
         .replace(/ln\(/g, 'Math.log(')
         .replace(/log\(/g, 'Math.log10(')
         .replace(/√\(/g, 'Math.sqrt(')
@@ -314,16 +314,16 @@ export function AdvancedCalculator() {
     { value: 'log', label: 'log', type: 'function' },
     { value: '1/x', label: '1/x', type: 'function' },
     { value: 'e', label: 'e', type: 'function' },
-    // Row 4: e^x, x², x^y, (empty)
+    // Row 4: e^x, x², x^y, %
     { value: 'e^x', label: 'e^x', type: 'function' },
     { value: 'x²', label: 'x²', type: 'function' },
     { value: 'x^y', label: 'x^y', type: 'function' },
-    { value: '', label: '', type: 'empty' },
-    // Row 5: C, (, ), %
+    { value: '%', label: '%', type: 'function' },
+    // Row 5: C, (, ), +
     { value: 'C', label: 'C', type: 'operator' },
     { value: '(', label: '(', type: 'function' },
     { value: ')', label: ')', type: 'function' },
-    { value: '%', label: '%', type: 'function' },
+    { value: '+', label: '+', type: 'operator' },
     // Row 6: 7, 8, 9, ÷
     { value: '7', label: '7', type: 'number' },
     { value: '8', label: '8', type: 'number' },
