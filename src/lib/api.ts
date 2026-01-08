@@ -19,6 +19,9 @@ export interface Calculator {
   inputs?: any[];
   results?: any[];
   tags?: string[];
+  meta_title?: string;
+  meta_description?: string;
+  meta_keywords?: string;
 }
 
 export const api = {

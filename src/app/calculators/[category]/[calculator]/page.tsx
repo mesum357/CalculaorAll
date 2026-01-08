@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import Head from 'next/head';
 import { api, type Calculator } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Heart } from 'lucide-react';
@@ -29,6 +30,53 @@ export default function CalculatorPage() {
 
   const categorySlug = params?.category as string;
   const calculatorSlug = params?.calculator as string;
+
+  // Update document meta tags when calculator data changes
+  useEffect(() => {
+    if (calculator) {
+      // Update title
+      const title = calculator.meta_title || `${calculator.name} - Free Online Calculator`;
+      document.title = title;
+
+      // Update meta description
+      const metaDescription = document.querySelector('meta[name="description"]');
+      const description = calculator.meta_description || 
+        (calculator.description ? calculator.description.replace(/<[^>]*>/g, '').substring(0, 160) : `Use our free ${calculator.name} to calculate results quickly and easily.`);
+      
+      if (metaDescription) {
+        metaDescription.setAttribute('content', description);
+      } else {
+        const newMeta = document.createElement('meta');
+        newMeta.name = 'description';
+        newMeta.content = description;
+        document.head.appendChild(newMeta);
+      }
+
+      // Update meta keywords
+      if (calculator.meta_keywords) {
+        let metaKeywords = document.querySelector('meta[name="keywords"]');
+        if (metaKeywords) {
+          metaKeywords.setAttribute('content', calculator.meta_keywords);
+        } else {
+          const newMeta = document.createElement('meta');
+          newMeta.name = 'keywords';
+          newMeta.content = calculator.meta_keywords;
+          document.head.appendChild(newMeta);
+        }
+      }
+
+      // Update Open Graph tags
+      const ogTitle = document.querySelector('meta[property="og:title"]');
+      if (ogTitle) {
+        ogTitle.setAttribute('content', title);
+      }
+
+      const ogDescription = document.querySelector('meta[property="og:description"]');
+      if (ogDescription) {
+        ogDescription.setAttribute('content', description);
+      }
+    }
+  }, [calculator]);
 
   // Fetch calculator data
   useEffect(() => {
